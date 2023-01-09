@@ -1,5 +1,7 @@
 package lab.drop.concurrent;
 
+import lab.drop.Sugar;
+
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -33,7 +35,6 @@ public class LazyAutoCloseable<T extends AutoCloseable> extends Lazy<T> implemen
      */
     @Override
     public void close() throws Exception {
-        if (isCalculated())
-            get().close();
+        Sugar.maybe(this, AutoCloseable::close);
     }
 }

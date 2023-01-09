@@ -102,18 +102,16 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::start),
                         () -> {
                             work();
-                            if (executorService.isCalculated())
-                                Concurrent.join(executorService.get());
+                            Sugar.maybe(executorService, Concurrent::join);
                         },
                         this::close,
                         this::internalClose,
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::stop),
                         () -> executorService.maybe(ExecutorService::shutdown)).iterator(),
                 this::setThrowable);
-        boolean silentStop = throwable instanceof SilentStop;
         state = throwable != null ? PipelineWorkerState.Cancelled : PipelineWorkerState.Done;
         latch.release();
-        if (!silentStop)
+        if (!(throwable instanceof SilentStop))
             Sugar.throwIfNonNull(throwable);
     }
 

@@ -241,9 +241,21 @@ public abstract class Sugar {
      */
     public static void throwIfAny(Reducer<Exception> exceptionsReducer, Lazy<List<Exception>> exceptions)
             throws Exception {
-        Objects.requireNonNull(exceptions, "Lazy list is null.");
-        if (exceptions.isCalculated())
-            throwIfNonNull(exceptionsReducer.apply(exceptions.get()));
+        Objects.requireNonNull(exceptionsReducer, "Reducer is null.");
+        maybe(exceptions, list -> throwIfNonNull(exceptionsReducer.apply(list)));
+    }
+
+    /**
+     * Performs an unsafe operation on the lazy value if and only if calculated.
+     * @param lazy The lazy value supplier.
+     * @param consumer The value consumer.
+     * @param <T> The value type.
+     * @throws Exception The consumer exception.
+     */
+    public static <T> void maybe(Lazy<T> lazy, UnsafeConsumer<T> consumer) throws Exception {
+        Objects.requireNonNull(consumer, "Consumer is null.");
+        if (Objects.requireNonNull(lazy, "Lazy is null.").isCalculated())
+            consumer.accept(lazy.get());
     }
 
     /**
@@ -276,6 +288,7 @@ public abstract class Sugar {
      */
     public static void runSteps(Iterator<UnsafeRunnable> steps, Reducer<Exception> exceptionsReducer) throws Exception {
         Lazy<List<Exception>> exceptions = new Lazy<>(ArrayList::new);
+        Objects.requireNonNull(exceptionsReducer, "Reducer is null.");
         runSteps(steps, throwable -> {
             if (throwable instanceof Error e)
                 throw e;
@@ -466,7 +479,7 @@ public abstract class Sugar {
      * @param type A class.
      * @param orElse The default return value if the object is not an instance of the type.
      * @param <T> The type to cast the object to, if is instance of the type. Must be assignable from <code>type</code>
-     *           - not validated.
+     *           - not validated. Must be non-primitive.
      * @return The object if instance of type, or the default.
      */
     public static <T> T as(Object object, Class<?> type, T orElse) {
