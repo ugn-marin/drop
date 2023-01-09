@@ -9,6 +9,7 @@ import lab.drop.function.ConditionalConsumer;
 import lab.drop.function.Reducer;
 import lab.drop.function.UnsafeConsumer;
 import lab.drop.function.UnsafeRunnable;
+import lab.drop.pipeline.monitoring.PipelineWorkerState;
 import lab.drop.pipeline.workers.*;
 import org.junit.jupiter.api.*;
 

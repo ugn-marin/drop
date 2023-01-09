@@ -1,4 +1,4 @@
-package lab.drop.pipeline;
+package lab.drop.pipeline.monitoring;
 
 /**
  * Represents the runtime state of the worker.

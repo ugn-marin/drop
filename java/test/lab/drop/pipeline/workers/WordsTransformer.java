@@ -1,7 +1,7 @@
 package lab.drop.pipeline.workers;
 
-import lab.drop.pipeline.Pipe;
 import lab.drop.pipeline.DropTransformer;
+import lab.drop.pipeline.Pipe;
 import lab.drop.pipeline.SupplyPipe;
 
 import java.util.Collection;

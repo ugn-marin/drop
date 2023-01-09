@@ -1,7 +1,7 @@
 package lab.drop.pipeline.workers;
 
-import lab.drop.pipeline.Pipe;
 import lab.drop.pipeline.DropConsumer;
+import lab.drop.pipeline.Pipe;
 
 import java.io.PrintStream;
 

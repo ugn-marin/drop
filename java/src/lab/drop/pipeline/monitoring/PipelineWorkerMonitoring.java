@@ -1,7 +1,5 @@
 package lab.drop.pipeline.monitoring;
 
-import lab.drop.pipeline.PipelineWorkerState;
-
 /**
  * Monitoring data of a pipeline worker.
  */
