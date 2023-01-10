@@ -100,7 +100,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
         var optionalUtilizationCounter = Optional.ofNullable(utilizationCounter);
         Sugar.runSteps(Stream.of(
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::start),
-                        Sugar.compose(this::work, () -> Sugar.maybe(executorService, Concurrent::join)),
+                        Sugar.glue(this::work, () -> Sugar.maybe(executorService, Concurrent::join)),
                         this::close,
                         this::internalClose,
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::stop),
