@@ -259,6 +259,14 @@ public abstract class Sugar {
     }
 
     /**
+     * Returns an unsafe runnable running the provided unsafe runnable steps one by one.
+     */
+    public static UnsafeRunnable compose(UnsafeRunnable... steps) {
+        requireFull(steps);
+        return () -> forEach(Stream.of(steps), UnsafeRunnable::run);
+    }
+
+    /**
      * Runs the provided unsafe runnable steps with guaranteed execution: For each step, subsequent steps are executed
      * in the <code>finally</code> block. Throwables are accepted by the throwable consumer.
      * @param steps The steps.
