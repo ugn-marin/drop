@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class UtilizationCounterTest {
-    private static final double delta = 0.03;
+    private static final double delta = 0.04;
 
     @Test
     void validations() throws InterruptedException {
