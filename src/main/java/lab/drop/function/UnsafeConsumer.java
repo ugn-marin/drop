@@ -2,6 +2,7 @@ package lab.drop.function;
 
 import lab.drop.Sugar;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -44,6 +45,20 @@ public interface UnsafeConsumer<I> {
                 return Unsafe.success();
             } catch (Exception e) {
                 return Unsafe.failure(e);
+            }
+        };
+    }
+
+    /**
+     * Wraps this consumer implementation in a consumer handling exceptions by the provided exception consumer.
+     */
+    default Consumer<I> toHandledConsumer(Consumer<Exception> exceptionConsumer) {
+        Objects.requireNonNull(exceptionConsumer, "Exception consumer is null.");
+        return t -> {
+            try {
+                accept(t);
+            } catch (Exception e) {
+                exceptionConsumer.accept(e);
             }
         };
     }

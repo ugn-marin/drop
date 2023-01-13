@@ -86,16 +86,10 @@ public class ObjectPool<T> implements UnsafeSupplier<T>, Consumer<T> {
      * @throws Exception A reduced exception of the action calls.
      */
     public void drain(UnsafeConsumer<T> action, Reducer<Exception> exceptionReducer) throws Exception {
+        Objects.requireNonNull(exceptionReducer, "Exception reducer is null.");
         List<Exception> exceptions = new ArrayList<>(size());
-        T object = objectsQueue.poll();
-        while (object != null) {
-            try {
-                action.accept(object);
-            } catch (Exception e) {
-                exceptions.add(e);
-            }
-            object = objectsQueue.poll();
-        }
+        Sugar.acceptWhile(objectsQueue::poll, Objects.requireNonNull(action, "Action is null.")
+                .toHandledConsumer(exceptions::add)::accept, Objects::nonNull);
         Sugar.throwIfNonNull(exceptionReducer.apply(exceptions));
     }
 

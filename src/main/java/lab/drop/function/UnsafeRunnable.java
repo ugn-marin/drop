@@ -2,7 +2,9 @@ package lab.drop.function;
 
 import lab.drop.Sugar;
 
+import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -38,6 +40,20 @@ public interface UnsafeRunnable {
      */
     default Supplier<Unsafe<Void>> toMonadicRunnable() {
         return Sugar.toMonadicSupplier(toVoidCallable());
+    }
+
+    /**
+     * Wraps this runnable implementation in a runnable handling exceptions by the provided exception consumer.
+     */
+    default Runnable toHandledRunnable(Consumer<Exception> exceptionConsumer) {
+        Objects.requireNonNull(exceptionConsumer, "Exception consumer is null.");
+        return () -> {
+            try {
+                run();
+            } catch (Exception e) {
+                exceptionConsumer.accept(e);
+            }
+        };
     }
 
     /**
