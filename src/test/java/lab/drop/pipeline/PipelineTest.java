@@ -331,6 +331,7 @@ public class PipelineTest {
             @Override
             public void accept(Character drop) throws InterruptedException {
                 sleepBetween(1, 5);
+                assertEquals(0, getThreadIndex());
                 super.accept(drop);
             }
         };
@@ -349,6 +350,7 @@ public class PipelineTest {
             @Override
             public void accept(Character drop) throws InterruptedException {
                 sleepBetween(2, 6);
+                assertEquals(0, getThreadIndex());
                 super.accept(drop);
             }
         };
@@ -367,6 +369,7 @@ public class PipelineTest {
             @Override
             public void accept(Character drop) throws InterruptedException {
                 sleepBetween(1, 5);
+                assertTrue(getThreadIndex() < 10);
                 super.accept(drop);
             }
         };

@@ -10,8 +10,10 @@ import lab.drop.function.UnsafeSupplier;
 import lab.drop.pipeline.monitoring.PipelineWorkerMonitoring;
 import lab.drop.pipeline.monitoring.PipelineWorkerState;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -28,6 +30,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     private final Lazy<String> string;
     private final Lazy<ExecutorService> executorService;
     private final Lazy<CancellableSubmitter> cancellableSubmitter;
+    private final Map<Long, Integer> threadIndexes;
     private final OneShot oneShot = new OneShot();
     private final Latch latch = new Latch();
     private final AtomicInteger cancelledWork = new AtomicInteger();
@@ -61,6 +64,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
         executorService = new Lazy<>(() -> new BlockingThreadPoolExecutor(concurrency, String.format("PW %d (%s)",
                 workerPoolNumber.incrementAndGet(), getName())));
         cancellableSubmitter = new Lazy<>(() -> new CancellableSubmitter(executorService.get()));
+        threadIndexes = new ConcurrentHashMap<>(concurrency);
         if (!internal)
             utilizationCounter = new UtilizationCounter(concurrency);
         state = PipelineWorkerState.Ready;
@@ -87,6 +91,17 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     @Override
     public int getConcurrency() {
         return concurrency;
+    }
+
+    /**
+     * Returns the index of the current worker thread. To be used in workers where a thread should be tied to a specific
+     * resource between drops. Usually should be between 0 and concurrency - 1, however cannot be guaranteed in workers
+     * where threads may have enough idle time to be removed from the worker's internal thread pool. This is not a
+     * problem if the index is used to prevent accessing the same resource from different threads. If called from a
+     * thread other than the worker's drop handling thread, it is too allocated an index of itself.
+     */
+    protected int getThreadIndex() {
+        return threadIndexes.computeIfAbsent(Thread.currentThread().getId(), t -> threadIndexes.size());
     }
 
     /**
