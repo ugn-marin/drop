@@ -60,7 +60,7 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     /**
-     * Returns the approximate number of threads blocked trying to submit new tasks.
+     * Returns the number of threads blocked trying to submit new tasks.
      */
     public int getBlocked() {
         return limiter.getBlocked();

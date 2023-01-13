@@ -30,7 +30,7 @@ public class Limiter {
     }
 
     /**
-     * Returns the approximate number of threads blocked on the limit.
+     * Returns the number of threads blocked on the limit.
      */
     public int getBlocked() {
         return blocked.get();
