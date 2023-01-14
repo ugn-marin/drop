@@ -79,6 +79,12 @@ public abstract class DropTransformer<I, O> extends PipelineWorker implements Un
     protected abstract Collection<O> getLastDrops() throws Exception;
 
     @Override
+    public void cancel(Throwable throwable) {
+        super.cancel(throwable);
+        input.setEndOfInput();
+    }
+
+    @Override
     void internalClose() {
         output.setEndOfInput();
     }

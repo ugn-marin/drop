@@ -13,10 +13,7 @@ import lab.drop.pipeline.monitoring.PipelineWorkerState;
 import lab.drop.pipeline.workers.*;
 import org.junit.jupiter.api.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1166,6 +1163,26 @@ public class PipelineTest {
         assertEquals("------", accum1.getValue());
         assertEquals(abc.replace("-", ""), accum2.getValue());
         bottlenecks(pipeline);
+    }
+
+    @Test
+    void open_fail() throws InterruptedException {
+        try {
+            var supply = new SupplyPipe<Integer>(1);
+            var pipeline = Pipeline.from(supply).into(new DropConsumer<>(supply) {
+                @Override
+                public void accept(Integer drop) {
+                    throw new NumberFormatException();
+                }
+            }).build();
+            System.out.println(pipeline);
+            var future = Concurrent.run(pipeline);
+            supply.push(1);
+            future.get();
+            fail();
+        } catch (ExecutionException e) {
+            assertTrue(e.getCause() instanceof NumberFormatException);
+        }
     }
 
     @Test

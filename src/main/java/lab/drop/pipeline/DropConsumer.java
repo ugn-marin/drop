@@ -50,4 +50,10 @@ public abstract class DropConsumer<I> extends PipelineWorker implements UnsafeCo
      * @throws Exception An exception terminating the pipeline.
      */
     public abstract void accept(I drop) throws Exception;
+
+    @Override
+    public void cancel(Throwable throwable) {
+        super.cancel(throwable);
+        input.setEndOfInput();
+    }
 }
