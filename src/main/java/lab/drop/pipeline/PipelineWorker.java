@@ -28,9 +28,10 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     private final int concurrency;
     private final Lazy<String> simpleName;
     private final Lazy<String> string;
+    private final Lazy<String> threadsName;
     private final Lazy<ExecutorService> executorService;
     private final Lazy<CancellableSubmitter> cancellableSubmitter;
-    private final Map<Long, Integer> threadIndexes;
+    private final Map<String, Integer> threadIndexes;
     private final OneShot oneShot = new OneShot();
     private final Latch latch = new Latch();
     private final AtomicInteger cancelledWork = new AtomicInteger();
@@ -61,8 +62,8 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
                 string += String.format("[%d]", concurrency);
             return string;
         });
-        executorService = new Lazy<>(() -> new BlockingThreadPoolExecutor(concurrency, String.format("PW %d (%s)",
-                workerPoolNumber.incrementAndGet(), getName())));
+        threadsName = new Lazy<>(() -> String.format("PW %d (%s)", workerPoolNumber.incrementAndGet(), getName()));
+        executorService = new Lazy<>(() -> new BlockingThreadPoolExecutor(concurrency, threadsName.get()));
         cancellableSubmitter = new Lazy<>(() -> new CancellableSubmitter(executorService.get()));
         threadIndexes = new ConcurrentHashMap<>(concurrency);
         if (!internal)
@@ -94,14 +95,16 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     }
 
     /**
-     * Returns the index of the current worker thread. To be used in workers where a thread should be tied to a specific
-     * resource between drops. Usually should be between 0 and concurrency - 1, however cannot be guaranteed in workers
-     * where threads may have enough idle time to be removed from the worker's internal thread pool. This is not a
-     * problem if the index is used to prevent accessing the same resource from different threads. If called from a
-     * thread other than the worker's drop handling thread, it is too allocated an index of itself.
+     * Returns the index of the current worker thread - a number between 0 and concurrency - 1. To be used in workers
+     * where a thread should be tied to a specific resource between drops.
+     * @throws UnsupportedOperationException If called from a thread other than the worker's drop handling thread.
      */
-    protected int getThreadIndex() {
-        return threadIndexes.computeIfAbsent(Thread.currentThread().getId(), t -> threadIndexes.size());
+    protected int getThreadIndex() throws UnsupportedOperationException {
+        var threadName = Thread.currentThread().getName();
+        if (!threadsName.isCalculated() || !threadName.startsWith(threadsName.get()))
+            throw new UnsupportedOperationException(threadName + " is not a drop handling thread of " + getName() +
+                    " - no index can be allocated.");
+        return threadIndexes.computeIfAbsent(threadName, t -> threadIndexes.size() % concurrency);
     }
 
     /**

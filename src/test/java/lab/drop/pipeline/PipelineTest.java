@@ -200,6 +200,21 @@ public class PipelineTest {
         } catch (IllegalStateException e) {
             System.out.println(e.getMessage());
         }
+        // Index unsupported
+        try {
+            var supplier = Pipelines.supplier(1);
+            var pipeline = Pipeline.from(supplier).into(new DropConsumer<>(supplier.getOutput()) {
+                @Override
+                public void accept(Integer drop) throws Exception {
+                    Concurrent.run(this::getThreadIndex).get();
+                }
+            }).build();
+            System.out.println(pipeline);
+            pipeline.run();
+            fail();
+        } catch (ExecutionException e) {
+            System.out.println(e.getCause().getMessage());
+        }
     }
 
     @Test
@@ -365,11 +380,14 @@ public class PipelineTest {
     void supplier1_large_accumulator10slow() throws Exception {
         SupplyPipe<Character> supplyPipe = new SupplyPipe<>(largeCapacity);
         CharSupplier charSupplier = new CharSupplier(five, supplyPipe, 1);
+        Set<Integer> usedThreadIndexes = new HashSet<>();
         CharAccumulator charAccumulator = new CharAccumulator(supplyPipe, 10) {
             @Override
             public void accept(Character drop) throws InterruptedException {
                 sleepBetween(1, 5);
-                assertTrue(getThreadIndex() < 10);
+                int index = getThreadIndex();
+                assertTrue(index < 10);
+                usedThreadIndexes.add(index);
                 super.accept(drop);
             }
         };
@@ -378,6 +396,7 @@ public class PipelineTest {
         pipeline.run();
         assertEquals(five.length(), charAccumulator.getValue().length());
         bottlenecks(pipeline);
+        Sugar.requireRange(usedThreadIndexes.size(), 3, 10);
     }
 
     @Test
