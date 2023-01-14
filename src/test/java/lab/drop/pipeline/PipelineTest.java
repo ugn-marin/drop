@@ -145,6 +145,12 @@ public class PipelineTest {
             System.out.println(e.getMessage());
         }
         try {
+            Pipelines.star(pipe, Pipelines.consumer(x -> {}));
+            fail();
+        } catch (PipelineConfigurationException e) {
+            System.out.println(e.getMessage());
+        }
+        try {
             Pipeline.from(pipe).join(pipe, pipe);
             fail();
         } catch (PipelineConfigurationException e) {
