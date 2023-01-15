@@ -267,7 +267,7 @@ public class PipelineTest {
         System.out.println(pipeline);
         pipeline.stop();
         pipeline.run();
-        assertEquals(PipelineWorkerState.Cancelled, pipeline.getState());
+        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
     }
 
     @Test
@@ -279,7 +279,7 @@ public class PipelineTest {
             pipeline.run();
             fail("Not interrupted");
         } catch (InterruptedException ignore) {}
-        assertEquals(PipelineWorkerState.Cancelled, pipeline.getState());
+        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
     }
 
     @Test
@@ -528,7 +528,7 @@ public class PipelineTest {
         } catch (ExecutionException e) {
             assertEquals("Pipeline interrupted.", e.getCause().getMessage());
         }
-        assertTrue(pipeline.getCancelledWork() > 0);
+        assertTrue(pipeline.getCanceledWork() > 0);
         assertTrue(five.length() * 5 > charAccumulator.getValue().length());
         assertEquals(0, supplyPipe.getTotalDrops());
         bottlenecks(pipeline);
@@ -675,7 +675,7 @@ public class PipelineTest {
         pipeline.run();
         // Join prefers modified - here different case
         assertEquals(five.toLowerCase(), charAccumulator.getValue().toLowerCase());
-        assertEquals(0, pipeline.getCancelledWork());
+        assertEquals(0, pipeline.getCanceledWork());
         assertEquals(five.length(), supplyPipe.getDropsPushed());
         assertEquals(five.length(), upper.getDropsPushed());
         assertEquals(five.length(), lower.getDropsPushed());
@@ -715,7 +715,7 @@ public class PipelineTest {
             Stream.of(e.getSuppressed()).filter(t -> t instanceof NumberFormatException).findFirst().orElseThrow();
         }
         assert pipeline != null;
-        assertTrue(pipeline.getCancelledWork() > 0);
+        assertTrue(pipeline.getCanceledWork() > 0);
         bottlenecks(pipeline);
     }
 
@@ -741,11 +741,11 @@ public class PipelineTest {
         });
         try {
             pipeline.run();
-            fail("Not cancelled");
+            fail("Not canceled");
         } catch (NumberFormatException e) {
             assertEquals("My cancellation message", e.getMessage());
         }
-        assertTrue(pipeline.getCancelledWork() > 0);
+        assertTrue(pipeline.getCanceledWork() > 0);
         bottlenecks(pipeline);
     }
 
@@ -771,11 +771,11 @@ public class PipelineTest {
         });
         try {
             pipeline.run();
-            fail("Not cancelled");
+            fail("Not canceled");
         } catch (NumberFormatException e) {
             assertEquals("My cancellation message", e.getMessage());
         }
-        assertTrue(pipeline.getCancelledWork() > 0);
+        assertTrue(pipeline.getCanceledWork() > 0);
         bottlenecks(pipeline);
     }
 
@@ -792,7 +792,7 @@ public class PipelineTest {
             pipeline.push(i);
         pipeline.setEndOfInput();
         pipeline.await();
-        assertEquals(PipelineWorkerState.Cancelled, pipeline.getState());
+        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
         try {
             future.get();
             fail();
@@ -817,7 +817,7 @@ public class PipelineTest {
             pipeline.setEndOfInput();
         });
         pipeline.await();
-        assertEquals(PipelineWorkerState.Cancelled, pipeline.getState());
+        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
         try {
             future.get();
             fail();
@@ -1025,7 +1025,7 @@ public class PipelineTest {
         pipeline.run();
         assertEquals("-".repeat(12), accum.getValue());
         assertEquals(12, supplyPipe.getDropsPushed());
-        assertEquals(0, pipeline.getCancelledWork());
+        assertEquals(0, pipeline.getCanceledWork());
         bottlenecks(pipeline);
     }
 
@@ -1210,7 +1210,7 @@ public class PipelineTest {
         });
         pipeline.run();
         assertEquals(full, consumer.getValue());
-        assertEquals(0, pipeline.getCancelledWork());
+        assertEquals(0, pipeline.getCanceledWork());
         bottlenecks(pipeline);
     }
 
@@ -1240,7 +1240,7 @@ public class PipelineTest {
         });
         pipeline.run();
         assertTrue(full.startsWith(consumer.getValue()));
-        assertTrue(pipeline.getCancelledWork() > 0);
+        assertTrue(pipeline.getCanceledWork() > 0);
         bottlenecks(pipeline);
     }
 
@@ -1270,7 +1270,7 @@ public class PipelineTest {
         });
         assertEquals(20, pipeline.getConcurrency());
         pipeline.run();
-        assertEquals(20, pipeline.getCancelledWork());
+        assertEquals(20, pipeline.getCanceledWork());
         bottlenecks(pipeline);
     }
 
@@ -1301,7 +1301,7 @@ public class PipelineTest {
         pipeline.run();
         assertEquals(full.length() * 5, consumer.getValue().length());
         assertEquals(full, Sugar.remove(consumer.getValue(), "null"));
-        assertEquals(0, pipeline.getCancelledWork());
+        assertEquals(0, pipeline.getCanceledWork());
         bottlenecks(pipeline);
     }
 

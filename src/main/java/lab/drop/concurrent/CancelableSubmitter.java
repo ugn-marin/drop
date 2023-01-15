@@ -9,17 +9,17 @@ import java.util.concurrent.Future;
 import java.util.function.Predicate;
 
 /**
- * A wrapper for an executor service, submitting tasks that can all be cancelled or interrupted at once.
+ * A wrapper for an executor service, submitting tasks that can all be canceled or interrupted at once.
  */
-public class CancellableSubmitter {
+public class CancelableSubmitter {
     private final ExecutorService executorService;
     private final Map<Callable<?>, Future<?>> submittedFutures = new HashMap<>();
 
     /**
-     * Constructs a cancellable submitter.
+     * Constructs a cancelable submitter.
      * @param executorService The executor service to submit the tasks to.
      */
-    public CancellableSubmitter(ExecutorService executorService) {
+    public CancelableSubmitter(ExecutorService executorService) {
         this.executorService = executorService;
     }
 
@@ -57,7 +57,7 @@ public class CancellableSubmitter {
 
     /**
      * Attempts to cancel all futures of submitted or executing tasks. Attempts to interrupt executing tasks.
-     * @return The number of tasks cancelled.
+     * @return The number of tasks canceled.
      */
     public int cancelSubmitted() {
         synchronized (submittedFutures) {

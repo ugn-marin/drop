@@ -30,11 +30,11 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     private final Lazy<String> string;
     private final Lazy<String> threadsName;
     private final Lazy<ExecutorService> executorService;
-    private final Lazy<CancellableSubmitter> cancellableSubmitter;
+    private final Lazy<CancelableSubmitter> cancelableSubmitter;
     private final Map<String, Integer> threadIndexes;
     private final OneShot oneShot = new OneShot();
     private final Latch latch = new Latch();
-    private final AtomicInteger cancelledWork = new AtomicInteger();
+    private final AtomicInteger canceledWork = new AtomicInteger();
     private UtilizationCounter utilizationCounter;
     private Retry.Builder retryBuilder;
     private Throwable throwable;
@@ -64,7 +64,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
         });
         threadsName = new Lazy<>(() -> String.format("PW %d (%s)", workerPoolNumber.incrementAndGet(), getName()));
         executorService = new Lazy<>(() -> new BlockingThreadPoolExecutor(concurrency, threadsName.get()));
-        cancellableSubmitter = new Lazy<>(() -> new CancellableSubmitter(executorService.get()));
+        cancelableSubmitter = new Lazy<>(() -> new CancelableSubmitter(executorService.get()));
         threadIndexes = new ConcurrentHashMap<>(concurrency);
         if (!internal)
             utilizationCounter = new UtilizationCounter(concurrency);
@@ -119,12 +119,13 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
         Sugar.runSteps(Stream.of(
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::start),
                         Sugar.glue(this::work, () -> Sugar.maybe(executorService, Concurrent::join)),
+                        () -> state = throwable != null ? PipelineWorkerState.Canceling : PipelineWorkerState.Closing,
                         this::close,
                         this::internalClose,
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::stop),
                         () -> executorService.maybe(ExecutorService::shutdown)).iterator(),
                 this::setThrowable);
-        state = throwable != null ? PipelineWorkerState.Cancelled : PipelineWorkerState.Done;
+        state = throwable != null ? PipelineWorkerState.Canceled : PipelineWorkerState.Done;
         latch.release();
         if (!(throwable instanceof SilentStop))
             Sugar.throwIfNonNull(throwable);
@@ -140,13 +141,13 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     }
 
     /**
-     * Submits internal work as a cancellable task. Blocked if concurrency level reached. The work execution failure
+     * Submits internal work as a cancelable task. Blocked if concurrency level reached. The work execution failure
      * will trigger cancellation of all submitted work and failure of the entire worker.
      * @param work Internal work.
      * @throws InterruptedRuntimeException If interrupted while trying to submit the work.
      */
     void submit(UnsafeRunnable work) {
-        cancellableSubmitter.get().submit(() -> {
+        cancelableSubmitter.get().submit(() -> {
             Sugar.throwIfNonNull(throwable);
             try {
                 return retryBuilder != null ? retryBuilder.build(work).call() : work.toVoidCallable().call();
@@ -181,7 +182,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
      * @param retryBuilder A stateless retry builder. A null builder sets the default behavior of no retries.
      */
     public void setRetryBuilder(Retry.Builder retryBuilder) {
-        if (cancellableSubmitter.isCalculated())
+        if (cancelableSubmitter.isCalculated())
             throw new IllegalStateException("The pipeline worker is already running.");
         this.retryBuilder = retryBuilder;
     }
@@ -200,16 +201,16 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     }
 
     /**
-     * Cancels the execution of all internal work, interrupts if possible. Does not wait for work to stop. Cancelling a
-     * worker in a pipeline is equivalent to cancelling the pipeline or the worker failing with the provided throwable.
+     * Cancels the execution of all internal work, interrupts if possible. Does not wait for work to stop. Canceling a
+     * worker in a pipeline is equivalent to canceling the pipeline or the worker failing with the provided throwable.
      * @param throwable The throwable for the worker to throw. If null, nothing will be thrown upon stoppage. Note that
-     *                  cancelling a worker (not a pipeline) with a null may cause dependent workers and the entire
+     *                  canceling a worker (not a pipeline) with a null may cause dependent workers and the entire
      *                  pipeline to hang. To stop the pipeline without exception, use the <code>stop</code> method.
      */
     public void cancel(Throwable throwable) {
         setThrowable(throwable);
         executorService.maybe(ExecutorService::shutdown);
-        cancellableSubmitter.maybe(cs -> cancelledWork.addAndGet(cs.cancelSubmitted()));
+        cancelableSubmitter.maybe(cs -> canceledWork.addAndGet(cs.cancelSubmitted()));
     }
 
     /**
@@ -221,11 +222,11 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     }
 
     /**
-     * Returns the total number of tasks that failed, were cancelled after submitting, or interrupted. The full count is
+     * Returns the total number of tasks that failed, were canceled after submitting, or interrupted. The full count is
      * only reached after the execution returns or throws an exception.
      */
-    public int getCancelledWork() {
-        return internal ? 0 : cancelledWork.get();
+    public int getCanceledWork() {
+        return internal ? 0 : canceledWork.get();
     }
 
     @Override
