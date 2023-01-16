@@ -38,7 +38,7 @@ public abstract class DropSupplier<O> extends PipelineWorker implements UnsafeSu
     }
 
     @Override
-    public void push(O drop) throws InterruptedException {
+    public void push(O drop) throws Exception {
         output.push(drop);
     }
 

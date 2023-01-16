@@ -77,7 +77,7 @@ public class UtilizationCounter {
 
     private void addTime(int change) {
         if (!started.get())
-            throw new IllegalStateException("Utilization measurement was not started.");
+            throw new IllegalStateException("Utilization measurement was stopped or not started.");
         long timeStep = timeStep();
         int wereBusy = Sugar.requireRange(currentBusy.addAndGet(change), 0, concurrency) - change;
         flatTime.add(timeStep);

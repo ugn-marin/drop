@@ -6,6 +6,7 @@ import lab.drop.pipeline.monitoring.PipeMonitoring;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +28,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
     private final AtomicInteger inPush = new AtomicInteger();
     private long expectedIndex = 0;
     private long totalsSum = 0;
-    private boolean endOfInput = false;
+    private Throwable endOfInput;
 
     /**
      * Constructs a pipe.
@@ -82,7 +83,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
         return expectedIndex == 0 ? 0 : Math.min((double) totalsSum / (expectedIndex * baseCapacity), 1);
     }
 
-    void push(Drop<D> drop) throws InterruptedException {
+    void push(Drop<D> drop) throws Exception {
         inPush.incrementAndGet();
         try {
             pushDrop(drop);
@@ -91,11 +92,10 @@ public abstract class Pipe<D> implements PipeMonitoring {
         }
     }
 
-    private void pushDrop(Drop<D> drop) throws InterruptedException {
+    private void pushDrop(Drop<D> drop) throws Exception {
         if (drop == null)
             return;
-        if (endOfInput)
-            throw new IllegalStateException("Attempting to push into pipe after end of input.");
+        Sugar.throwIfNonNull(endOfInput);
         while (true) {
             lock.lockInterruptibly();
             try {
@@ -110,7 +110,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
         }
     }
 
-    private boolean tryPush(Drop<D> drop) throws InterruptedException {
+    private boolean tryPush(Drop<D> drop) throws Exception {
         if (drop.index() == expectedIndex) {
             inOrderQueue.put(drop);
             expectedIndex++;
@@ -128,7 +128,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
     }
 
     private Drop<D> take() throws InterruptedException {
-        while (!endOfInput) {
+        while (endOfInput == null) {
             Drop<D> drop = inOrderQueue.poll(POLLING_TIMEOUT, TimeUnit.MILLISECONDS);
             if (drop != null)
                 return drop;
@@ -137,11 +137,20 @@ public abstract class Pipe<D> implements PipeMonitoring {
     }
 
     /**
-     * Sets the pipe end-of-input flag, indicating there's no more drops to poll from it. Pushing drops after setting
+     * Sets the pipe end-of-input "flag", indicating there's no more drops to poll from it. Pushing drops after setting
      * the flag will result in an exception.
      */
     void setEndOfInput() {
-        endOfInput = true;
+        setEndOfInput(null);
+    }
+
+    /**
+     * Sets the pipe end-of-input "flag" as a throwable for cancellation flow, in case a push attempt will occur before
+     * the canceled worker closes.
+     */
+    void setEndOfInput(Throwable throwable) {
+        endOfInput = Objects.requireNonNullElse(throwable, new IllegalStateException(
+                "Attempting to push into pipe after end of input."));
     }
 
     void drain() throws Exception {

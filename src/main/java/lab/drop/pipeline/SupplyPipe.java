@@ -61,13 +61,13 @@ public class SupplyPipe<D> extends Pipe<D> implements SupplyGate<D> {
     }
 
     @Override
-    public void push(D drop) throws InterruptedException {
+    public void push(D drop) throws Exception {
         if (predicate == null || predicate.test(drop))
             super.push(new Drop<>(index.getAndIncrement(), drop));
     }
 
     @Override
-    void push(Drop<D> drop) throws InterruptedException {
+    void push(Drop<D> drop) throws Exception {
         push(drop.drop());
     }
 }

@@ -780,7 +780,7 @@ public class PipelineTest {
     }
 
     @Test
-    void fail_before_await() throws InterruptedException {
+    void fail_before_await() throws Exception {
         var supplyPipe = new SupplyPipe<Integer>(smallCapacity);
         var pipeline = Pipeline.from(supplyPipe).into(Pipelines.consumer(supplyPipe, i -> {
             if (i == 9)
@@ -1166,7 +1166,7 @@ public class PipelineTest {
     }
 
     @Test
-    void open_fail() throws InterruptedException {
+    void open_fail() throws Exception {
         try {
             var supply = new SupplyPipe<Integer>(1);
             var pipeline = Pipeline.from(supply).into(new DropConsumer<>(supply) {
@@ -1182,7 +1182,7 @@ public class PipelineTest {
             fail();
         } catch (ExecutionException e) {
             assertTrue(e.getCause() instanceof NumberFormatException);
-        }
+        } catch (NumberFormatException ignore) {}
     }
 
     @Test
@@ -1423,13 +1423,13 @@ public class PipelineTest {
     }
 
     @Test
-    void tree() throws InterruptedException {
+    void tree() throws Exception {
         int root = 3;
         var pipeline = tree(root);
         System.out.println(pipeline);
         Concurrent.run(pipeline);
         int times = 3;
-        Sugar.iterate(times, i -> Interruptible.run(() -> pipeline.push('a')));
+        Sugar.iterate(times, i -> Sugar.sneaky(() -> pipeline.push('a')));
         pipeline.setEndOfInput();
         pipeline.await();
         int actionsCount = 0;
@@ -1492,7 +1492,7 @@ public class PipelineTest {
         System.out.println(pipeline);
         Concurrent.run(pipeline);
         int times = 50;
-        Sugar.iterate(times, i -> Interruptible.run(() -> pipeline.push('a')));
+        Sugar.iterate(times, i -> Sugar.sneaky(() -> pipeline.push('a')));
         pipeline.setEndOfInput();
         pipeline.await();
         int actionsCount = 0;

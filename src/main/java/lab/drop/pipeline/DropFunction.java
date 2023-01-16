@@ -63,7 +63,7 @@ public abstract class DropFunction<I, O> extends PipelineWorker implements Unsaf
     @Override
     public void cancel(Throwable throwable) {
         super.cancel(throwable);
-        input.setEndOfInput();
+        input.setEndOfInput(throwable);
     }
 
     @Override

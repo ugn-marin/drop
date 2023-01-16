@@ -49,7 +49,7 @@ final class Join<D> extends PipelineWorker implements OutputWorker<D> {
             submit(() -> input.drain(this::push));
     }
 
-    private void push(Drop<D> drop) throws InterruptedException {
+    private void push(Drop<D> drop) throws Exception {
         long index = drop.index();
         boolean push = false;
         Drop<D> next = null;

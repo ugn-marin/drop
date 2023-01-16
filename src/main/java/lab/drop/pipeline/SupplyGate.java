@@ -15,16 +15,16 @@ public interface SupplyGate<S> {
     /**
      * Pushes a drop using this supply gate's index scope.
      * @param drop The drop.
-     * @throws InterruptedException If interrupted while attempting to push the drop.
+     * @throws Exception If work was canceled or otherwise interrupted while attempting to push the drop.
      */
-    void push(S drop) throws InterruptedException;
+    void push(S drop) throws Exception;
 
     /**
      * Pushes all the drops from the stream into the supply gate.
      * @param stream The stream.
-     * @throws InterruptedException If interrupted while attempting to push a drop.
+     * @throws Exception If work was canceled or otherwise interrupted while attempting to push a drop.
      */
-    default void pushAll(Stream<S> stream) throws InterruptedException {
+    default void pushAll(Stream<S> stream) throws Exception {
         var iterator = Objects.requireNonNull(stream, "Stream is null.").sequential().iterator();
         while (iterator.hasNext())
             push(iterator.next());

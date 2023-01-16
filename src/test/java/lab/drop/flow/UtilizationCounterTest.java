@@ -17,7 +17,7 @@ public class UtilizationCounterTest {
             counter.stop();
             Assertions.fail();
         } catch (IllegalStateException e) {
-            Assertions.assertEquals("Utilization measurement was not started.", e.getMessage());
+            Assertions.assertEquals("Utilization measurement was stopped or not started.", e.getMessage());
         }
         counter.start();
         Thread.sleep(50);

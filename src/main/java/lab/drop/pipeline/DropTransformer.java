@@ -55,7 +55,7 @@ public abstract class DropTransformer<I, O> extends PipelineWorker implements Un
         submit(() -> push(busyGet(this::getLastDrops)));
     }
 
-    private void push(Collection<O> transformedDrops) throws InterruptedException {
+    private void push(Collection<O> transformedDrops) throws Exception {
         if (transformedDrops != null)
             for (O transformedItem : transformedDrops)
                 output.push(transformedItem);
@@ -81,7 +81,7 @@ public abstract class DropTransformer<I, O> extends PipelineWorker implements Un
     @Override
     public void cancel(Throwable throwable) {
         super.cancel(throwable);
-        input.setEndOfInput();
+        input.setEndOfInput(throwable);
     }
 
     @Override

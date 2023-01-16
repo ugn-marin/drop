@@ -54,6 +54,6 @@ public abstract class DropConsumer<I> extends PipelineWorker implements UnsafeCo
     @Override
     public void cancel(Throwable throwable) {
         super.cancel(throwable);
-        input.setEndOfInput();
+        input.setEndOfInput(throwable);
     }
 }

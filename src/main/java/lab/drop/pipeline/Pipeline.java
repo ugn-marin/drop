@@ -120,10 +120,10 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S> {
      * Pushes a drop into the supply pipe feeding the pipeline. This is the entry point of an open pipeline, although
      * it might be used for additional supply for a closed pipeline as well, as long as end of input wasn't reached.
      * @param drop The drop.
-     * @throws InterruptedException If interrupted while attempting to push the drop.
+     * @throws Exception If work was canceled or otherwise interrupted while attempting to push the drop.
      */
     @Override
-    public void push(S drop) throws InterruptedException {
+    public void push(S drop) throws Exception {
         supplyPipe.push(drop);
     }
 
