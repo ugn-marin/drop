@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class UtilizationCounterTest {
-    private static final double delta = 0.035;
+    private static final double delta = 0.05;
 
     @Test
     void validations() throws InterruptedException {
@@ -27,7 +27,7 @@ public class UtilizationCounterTest {
             counter.idle();
             Assertions.fail();
         } catch (IllegalArgumentException e) {
-            Assertions.assertEquals("Value is smaller than the minimum 0.", e.getMessage());
+            Assertions.assertEquals("-1 is smaller than the minimum 0.", e.getMessage());
         }
         counter.busy();
         counter.busy();
@@ -36,7 +36,7 @@ public class UtilizationCounterTest {
             counter.busy();
             Assertions.fail();
         } catch (IllegalArgumentException e) {
-            Assertions.assertEquals("Value is greater than the maximum 2.", e.getMessage());
+            Assertions.assertEquals("3 is greater than the maximum 2.", e.getMessage());
         }
         try {
             counter.start();

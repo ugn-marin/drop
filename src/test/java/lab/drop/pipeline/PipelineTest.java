@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -390,7 +391,9 @@ public class PipelineTest {
                 sleepBetween(1, 5);
                 int index = getThreadIndex();
                 assertTrue(index < 10);
-                usedThreadIndexes.add(index);
+                synchronized (usedThreadIndexes) {
+                    usedThreadIndexes.add(index);
+                }
                 super.accept(drop);
             }
         };

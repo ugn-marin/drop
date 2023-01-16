@@ -318,9 +318,9 @@ public abstract class Sugar {
     public static <N extends Number> N requireRange(N value, N min, N max) {
         Objects.requireNonNull(value, "Value is null.");
         if (min != null && value.doubleValue() < min.doubleValue())
-            throw new IllegalArgumentException("Value is smaller than the minimum " + min + ".");
+            throw new IllegalArgumentException(value + " is smaller than the minimum " + min + ".");
         if (max != null && value.doubleValue() > max.doubleValue())
-            throw new IllegalArgumentException("Value is greater than the maximum " + max + ".");
+            throw new IllegalArgumentException(value + " is greater than the maximum " + max + ".");
         return value;
     }
 
