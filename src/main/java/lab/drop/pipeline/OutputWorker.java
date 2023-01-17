@@ -17,4 +17,11 @@ public interface OutputWorker<O> {
     default DropConsumer<O> drain() {
         return new Drain<>(getOutput());
     }
+
+    /**
+     * Constructs a drop consumer forwarding the output pipe of this worker into a supply gate.
+     */
+    default DropConsumer<O> forward(SupplyGate<O> supplyGate) {
+        return new Forward<>(getOutput(), supplyGate);
+    }
 }

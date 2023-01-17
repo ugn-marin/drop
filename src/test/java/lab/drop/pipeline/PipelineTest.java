@@ -943,6 +943,49 @@ public class PipelineTest {
     }
 
     @Test
+    void supplier1_transformer1_forward() throws Exception {
+        var supplier = new CharSupplier(five, new SupplyPipe<>(smallCapacity), 1);
+        var transformer = new WordsTransformer(supplier.getOutput(), new SupplyPipe<>(1), 1);
+        var pipeline = Pipeline.from(supplier).through(transformer).into(transformer.forward(System.out::println)).build();
+        System.out.println(pipeline);
+        pipeline.run();
+        bottlenecks(pipeline);
+    }
+
+    @Test
+    void supplier1_transformer1_forward_completeness() {
+        var supplier = new CharSupplier(five, new SupplyPipe<>(smallCapacity), 1);
+        var transformer = new WordsTransformer(supplier.getOutput(), new SupplyPipe<>(1), 1);
+        try {
+            Pipeline.from(supplier).through(transformer).into(supplier.forward(System.out::print)).build();
+            fail();
+        } catch (PipelineConfigurationException e) {
+            System.out.println(e.getMessage());
+            assertTrue(e.getWarnings().contains(PipelineWarning.COMPLETENESS));
+            assertTrue(e.toString().contains(PipelineWarning.COMPLETENESS.getDescription()));
+        }
+    }
+
+    @Test
+    void supplier1_forward_cycle() throws Exception {
+        var supplyPipe = new SupplyPipe<Character>(smallCapacity);
+        var counter = new AtomicInteger();
+        var action = Pipelines.action(supplyPipe, new ScopePipe<>(smallCapacity), 16, c -> {
+            if (counter.incrementAndGet() == 10000)
+                throw new NumberFormatException();
+        });
+        var pipeline = Pipeline.from(supplyPipe).through(action).into(action.forward(supplyPipe)).build();
+        System.out.println(pipeline);
+        supplyPipe.push('a');
+        try {
+            pipeline.run();
+            fail();
+        } catch (NumberFormatException e) {
+            assertTrue(counter.get() >= 10000);
+        }
+    }
+
+    @Test
     void function_function_completeness() {
         var supplier = new CharSupplier(full, new SupplyPipe<>(minimumCapacity), 1);
         var function1 = Pipelines.function(supplier.getOutput(),
