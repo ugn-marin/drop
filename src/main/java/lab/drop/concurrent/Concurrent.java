@@ -5,6 +5,7 @@ import lab.drop.function.Reducer;
 import lab.drop.function.UnsafeRunnable;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -18,6 +19,13 @@ public abstract class Concurrent {
             namedThreadFactory(Concurrent.class.getSimpleName(), true)));
 
     private Concurrent() {}
+
+    /**
+     * Creates a concurrent set.
+     */
+    public static <T> Set<T> set() {
+        return ConcurrentHashMap.newKeySet();
+    }
 
     /**
      * Submits an unsafe runnable into the cached pool.

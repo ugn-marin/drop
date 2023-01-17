@@ -384,16 +384,14 @@ public class PipelineTest {
     void supplier1_large_accumulator10slow() throws Exception {
         SupplyPipe<Character> supplyPipe = new SupplyPipe<>(largeCapacity);
         CharSupplier charSupplier = new CharSupplier(five, supplyPipe, 1);
-        Set<Integer> usedThreadIndexes = new HashSet<>();
+        Set<Integer> usedThreadIndexes = Concurrent.set();
         CharAccumulator charAccumulator = new CharAccumulator(supplyPipe, 10) {
             @Override
             public void accept(Character drop) throws InterruptedException {
                 sleepBetween(1, 5);
                 int index = getThreadIndex();
                 assertTrue(index < 10);
-                synchronized (usedThreadIndexes) {
-                    usedThreadIndexes.add(index);
-                }
+                usedThreadIndexes.add(index);
                 super.accept(drop);
             }
         };
