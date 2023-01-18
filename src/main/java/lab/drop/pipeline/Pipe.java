@@ -158,9 +158,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
     }
 
     void drain(UnsafeConsumer<Drop<D>> action) throws Exception {
-        Drop<D> next;
-        while ((next = take()) != null)
-            action.accept(next);
+        Sugar.acceptWhile(this::take, action, Objects::nonNull);
     }
 
     void clear() throws InterruptedException {
