@@ -32,7 +32,7 @@ public abstract class DropFunction<I, O> extends PipelineWorker implements Unsaf
      * @param concurrency The maximum parallel drops applying to allow.
      */
     public DropFunction(Pipe<I> input, Pipe<O> output, int concurrency) {
-        super(false, Sugar.requireRange(concurrency, 1, null));
+        super(false, concurrency);
         this.input = Objects.requireNonNull(input, "Input pipe is required.");
         this.output = Objects.requireNonNull(output, "Output pipe is required.");
     }

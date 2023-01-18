@@ -42,7 +42,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
 
     PipelineWorker(boolean internal, int concurrency) {
         this.internal = internal;
-        this.concurrency = concurrency;
+        this.concurrency = Sugar.requireRange(concurrency, internal ? null : 1, null);
         simpleName = new Lazy<>(() -> {
             Class<?> clazz = getClass();
             String simpleName = clazz.getSimpleName();

@@ -26,7 +26,7 @@ public abstract class DropConsumer<I> extends PipelineWorker implements UnsafeCo
      * @param concurrency The maximum parallel drops consuming to allow.
      */
     public DropConsumer(Pipe<I> input, int concurrency) {
-        this(false, input, Sugar.requireRange(concurrency, 1, null));
+        this(false, input, concurrency);
     }
 
     DropConsumer(boolean internal, Pipe<I> input, int concurrency) {

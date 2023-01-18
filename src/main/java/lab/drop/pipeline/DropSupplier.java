@@ -28,7 +28,7 @@ public abstract class DropSupplier<O> extends PipelineWorker implements UnsafeSu
      * @param concurrency The maximum parallel drops supplying to allow.
      */
     public DropSupplier(SupplyPipe<O> output, int concurrency) {
-        super(false, Sugar.requireRange(concurrency, 1, null));
+        super(false, concurrency);
         this.output = Objects.requireNonNull(output, "Output pipe is required.");
     }
 
