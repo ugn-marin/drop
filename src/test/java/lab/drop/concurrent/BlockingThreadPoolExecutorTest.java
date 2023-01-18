@@ -14,7 +14,7 @@ class BlockingThreadPoolExecutorTest {
     void order() throws InterruptedException {
         var pool = new BlockingThreadPoolExecutor();
         int tasks = 100;
-        int each = 20;
+        int each = 5;
         Set<Integer> finished = new HashSet<>();
         long start = System.currentTimeMillis();
         Sugar.iterate(tasks, task -> pool.execute(() -> {

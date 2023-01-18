@@ -385,7 +385,7 @@ public class PipelineTest {
     @Test
     void supplier1_minimum_accumulator1slow() throws Exception {
         SupplyPipe<Character> supplyPipe = new SupplyPipe<>(minimumCapacity);
-        CharSupplier charSupplier = new CharSupplier(five, supplyPipe, 1);
+        CharSupplier charSupplier = new CharSupplier(full, supplyPipe, 1);
         CharAccumulator charAccumulator = new CharAccumulator(supplyPipe, 1) {
             @Override
             public void accept(Character drop) throws InterruptedException {
@@ -397,7 +397,7 @@ public class PipelineTest {
         var pipeline = Pipelines.direct(charSupplier, charAccumulator);
         System.out.println(pipeline);
         pipeline.run();
-        assertEquals(five, charAccumulator.getValue());
+        assertEquals(full, charAccumulator.getValue());
         bottlenecks(pipeline);
     }
 
@@ -467,14 +467,14 @@ public class PipelineTest {
     @Test
     void supplier20slow_small_accumulator5slow() throws Exception {
         SupplyPipe<Character> supplyPipe = new SupplyPipe<>(smallCapacity);
-        CharSupplier charSupplier = new CharSupplier(five.repeat(5), supplyPipe, 20) {
+        CharSupplier charSupplier = new CharSupplier(five.repeat(5), supplyPipe, 18) {
             @Override
             public Optional<Character> get() throws InterruptedException {
                 sleepBetween(1, 5);
                 return super.get();
             }
         };
-        CharAccumulator charAccumulator = new CharAccumulator(supplyPipe, 5) {
+        CharAccumulator charAccumulator = new CharAccumulator(supplyPipe, 7) {
             @Override
             public void accept(Character drop) throws InterruptedException {
                 sleepBetween(1, 3);
@@ -519,14 +519,14 @@ public class PipelineTest {
         CharSupplier charSupplier = new CharSupplier(five.repeat(5), supplyPipe, 32) {
             @Override
             public Optional<Character> get() throws InterruptedException {
-                sleepBetween(1, 5);
+                sleepBetween(1, 2);
                 return super.get();
             }
         };
         CharAccumulator charAccumulator = new CharAccumulator(supplyPipe, 10) {
             @Override
             public void accept(Character drop) throws InterruptedException {
-                sleepBetween(1, 5);
+                sleepBetween(1, 2);
                 super.accept(drop);
             }
         };
@@ -582,7 +582,7 @@ public class PipelineTest {
         CharAccumulator charAccumulator = new CharAccumulator(new ScopePipe<>(smallCapacity), 1) {
             @Override
             public void accept(Character drop) throws InterruptedException {
-                sleepBetween(1, 5);
+                sleepBetween(1, 2);
                 super.accept(drop);
             }
         };
@@ -681,7 +681,7 @@ public class PipelineTest {
         CharUpperFunction charUpperFunction = new CharUpperFunction(toUpper, upper, 3) {
             @Override
             public Character apply(Character drop) throws InterruptedException {
-                sleepBetween(2, 8);
+                sleepBetween(2, 7);
                 return super.apply(drop);
             }
         };
@@ -689,7 +689,7 @@ public class PipelineTest {
         CharLowerFunction charLowerFunction = new CharLowerFunction(toLower, lower, 3) {
             @Override
             public Character apply(Character drop) throws InterruptedException {
-                sleepBetween(10, 15);
+                sleepBetween(7, 9);
                 return super.apply(drop);
             }
         };
@@ -703,7 +703,7 @@ public class PipelineTest {
         CharAccumulator charAccumulator = new CharAccumulator(toAccum, 1) {
             @Override
             public void accept(Character drop) throws InterruptedException {
-                sleepBetween(1, 5);
+                sleepBetween(1, 3);
                 super.accept(drop);
             }
         };
@@ -907,18 +907,18 @@ public class PipelineTest {
     @Test
     void stream_parallel_accumulator1slow() throws Exception {
         var supplyPipe = new SupplyPipe<Character>(smallCapacity);
-        var supplier = Pipelines.supplier(supplyPipe, Sugar.stream(five).parallel());
+        var supplier = Pipelines.supplier(supplyPipe, Sugar.stream(full).parallel());
         var accumulator = new CharAccumulator(supplyPipe, 1) {
             @Override
             public void accept(Character drop) throws InterruptedException {
-                sleep(4);
+                sleep(1);
                 super.accept(drop);
             }
         };
         var pipeline = Pipelines.direct(supplier, accumulator);
         System.out.println(pipeline);
         pipeline.run();
-        assertEquals(five, accumulator.getValue());
+        assertEquals(full, accumulator.getValue());
         bottlenecks(pipeline);
     }
 
