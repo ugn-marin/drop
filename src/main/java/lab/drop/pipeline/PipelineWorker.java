@@ -246,7 +246,8 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     abstract void work() throws Exception;
 
     /**
-     * Called automatically when the worker is done executing or failed.
+     * Called automatically when the worker is done executing or failed. The worker state during this method will be
+     * either Closing if finished normally, or Cancelling if work was canceled, failed or interrupted.
      * @throws Exception A possible exception from the closing logic. Will be thrown by the pipeline if and only if it
      * isn't already in the process of throwing a different exception.
      */

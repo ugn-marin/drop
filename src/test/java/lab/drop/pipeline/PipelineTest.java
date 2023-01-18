@@ -283,6 +283,47 @@ public class PipelineTest {
     }
 
     @Test
+    void states1() throws Exception {
+        var pipeline = Pipelines.direct(Sugar.stream(abc), new DropConsumer<>(new SupplyPipe<>(smallCapacity)) {
+            @Override
+            public void accept(Character drop) {
+                assertEquals(PipelineWorkerState.Running, getState());
+            }
+
+            @Override
+            protected void close() {
+                assertEquals(PipelineWorkerState.Closing, getState());
+            }
+        });
+        System.out.println(pipeline);
+        assertEquals(PipelineWorkerState.Ready, pipeline.getState());
+        pipeline.run();
+        assertEquals(PipelineWorkerState.Done, pipeline.getState());
+    }
+
+    @Test
+    void states2() throws Exception {
+        var pipeline = Pipelines.direct(Sugar.stream(abc), new DropConsumer<>(new SupplyPipe<>(smallCapacity)) {
+            @Override
+            public void accept(Character drop) {
+                throw new NumberFormatException();
+            }
+
+            @Override
+            protected void close() {
+                assertEquals(PipelineWorkerState.Canceling, getState());
+            }
+        });
+        System.out.println(pipeline);
+        assertEquals(PipelineWorkerState.Ready, pipeline.getState());
+        try {
+            pipeline.run();
+            fail();
+        } catch (NumberFormatException ignore) {}
+        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
+    }
+
+    @Test
     void supplier1_minimum_accumulator1() throws Exception {
         SupplyPipe<Character> supplyPipe = new SupplyPipe<>(minimumCapacity);
         CharSupplier charSupplier = new CharSupplier(abc, supplyPipe, 1);
