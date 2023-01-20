@@ -73,8 +73,8 @@ public class PipelineTest {
             System.err.println("Bottlenecks: " + bottlenecks);
         System.out.println("Utilization: " + utilizationScale.apply(pipeline.getAverageUtilization()));
         var utilization = pipeline.getComponentsMonitoringMatrix(
-                pipe -> String.format("<%s>", utilizationScale.apply(pipe.getAverageLoad())),
-                pw -> utilizationScale.apply(pw.getAverageUtilization()).toString());
+                pipe -> String.format("%s\n<%s>", pipe.getName(), utilizationScale.apply(pipe.getAverageLoad())),
+                pw -> String.format("%s\n%s", pw.getName(), utilizationScale.apply(pw.getAverageUtilization())));
         System.out.println(utilization);
     }
 

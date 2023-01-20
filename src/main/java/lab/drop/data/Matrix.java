@@ -603,33 +603,63 @@ public class Matrix<T> {
 
     @Override
     public String toString() {
-        return toString(" ", "\n", "", true);
+        return toString(" ", "\n", "", false);
+    }
+
+    /**
+     * Generates a table-like representation of the matrix with the provided headers.
+     */
+    public String toTableString(String... headers) {
+        var table = map(Sugar::cast);
+        table.addRowBefore(0, headers);
+        return table.toString(" | ", "\n", "", true);
     }
 
     /**
      * Returns a custom string representation of the matrix using the provided parameters.
      * @param cellsDelimiter The delimiter between cells in a row. Default is space.
-     * @param rowsDelimiter The delimiter between rows. Default is the line separator.
+     * @param rowsDelimiter The delimiter between rows. Default is newline.
      * @param nullDefault The representation of null cells. Default is empty string.
-     * @param tabFiller True if tab-like spacing in cells is required. Generally should be true if the rows' delimiter
-     *                  is newline. Default is true.
+     * @param hasHeaders True if the first row is to be considered as headers. Default is false.
      * @return The string representation of the matrix.
      */
-    public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault, boolean tabFiller) {
+    public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault, boolean hasHeaders) {
         Sugar.requireNoneNull(List.of(cellsDelimiter, rowsDelimiter, nullDefault));
+        if (isEmpty())
+            return "";
         Matrix<String> strings = new Matrix<>(size());
+        Matrix<List<String>> additionalLines = new Matrix<>(size());
+        boolean splitLines = rowsDelimiter.contains("\n");
         int[] maxLength = new int[content.size()];
         getBlock().forEach((x, y) -> {
             String string = Objects.toString(get(x, y), nullDefault);
-            strings.set(x, y, string);
-            if (tabFiller)
-                maxLength[x] = Math.max(maxLength[x], string.length());
+            var lines = new ArrayList<>(splitLines ? string.lines().toList() : List.of(string));
+            if (splitLines)
+                maxLength[x] = Math.max(maxLength[x], lines.stream().mapToInt(String::length).max().orElse(0));
+            strings.set(x, y, lines.isEmpty() ? string : Sugar.removeFirst(lines));
+            additionalLines.set(x, y, lines);
         });
-        if (tabFiller) {
-            getBlock().forEach((x, y) -> {
+        int addedRows = 0;
+        for (int y = 0; y < additionalLines.rows(); y++) {
+            var additionalLinesRow = additionalLines.getRow(y);
+            int linesToAdd = additionalLinesRow.stream().mapToInt(List::size).max().orElse(0);
+            if (linesToAdd == 0)
+                continue;
+            for (int i = 0; i < linesToAdd; i++) {
+                final int addedLine = i;
+                strings.addRowAfter(y + addedRows, additionalLinesRow.stream().map(lines ->
+                        lines.size() > addedLine ? lines.get(addedLine) : "").toArray(String[]::new));
+                addedRows++;
+            }
+        }
+        if (splitLines) {
+            strings.getBlock().forEach((x, y) -> {
                 String string = strings.get(x, y);
                 strings.set(x, y, string + " ".repeat(maxLength[x] - string.length()));
             });
+            if (hasHeaders)
+                strings.addRowAfter(additionalLines.getFirstRow().stream().mapToInt(List::size).max().orElse(0),
+                        Arrays.stream(maxLength).mapToObj("-"::repeat).toArray(String[]::new));
         }
         return strings.getRows().stream().map(row -> String.join(cellsDelimiter, row).stripTrailing())
                 .collect(Collectors.joining(rowsDelimiter)).stripTrailing();

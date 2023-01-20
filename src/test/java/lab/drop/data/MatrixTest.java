@@ -1390,6 +1390,43 @@ public class MatrixTest {
     }
 
     @Test
+    void newlines() {
+        var matrix = new Matrix<String>();
+        matrix.addRow(null, "no-newline", "yes\nnewline");
+        matrix.addRow("three\nlines\nhere", "100", "200");
+        matrix.addRow("1\n2", "\n2\n3", null);
+        Assertions.assertEquals("""
+                      no-newline yes
+                                 newline
+                three 100        200
+                lines
+                here
+                1
+                2     2
+                      3""", matrix.toString());
+    }
+
+    @Test
+    void table() {
+        var matrix = new Matrix<String>();
+        matrix.addRow(null, "no-newline", "yes\nnewline");
+        matrix.addRow("three\nlines\nhere", "100", "200");
+        matrix.addRow("1\n2", "\n2\n3", null);
+        Assertions.assertEquals("""
+                #1    | Header     | Third
+                      | 2          |
+                ----- | ---------- | -------
+                      | no-newline | yes
+                      |            | newline
+                three | 100        | 200
+                lines |            |
+                here  |            |
+                1     |            |
+                2     | 2          |
+                      | 3          |""", matrix.toTableString("#1", "Header\n2", "Third"));
+    }
+
+    @Test
     void badIndexes() {
         assertBadIndex(() -> new Matrix<>(0, 1));
         assertBadIndex(() -> new Matrix<>(1, 0));
