@@ -20,6 +20,13 @@ public abstract class Pipelines {
     private Pipelines() {}
 
     /**
+     * Returns the number of processors available to the JVM to use as a worker concurrency level.
+     */
+    public static int fullConcurrency() {
+        return Runtime.getRuntime().availableProcessors();
+    }
+
+    /**
      * Constructs a pipeline from the supplier into the consumer. Equivalent to:
      * <pre>
      * Pipeline.from(supplier).into(consumer).build()

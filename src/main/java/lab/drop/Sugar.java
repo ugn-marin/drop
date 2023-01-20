@@ -3,10 +3,7 @@ package lab.drop;
 import lab.drop.concurrent.InterruptedRuntimeException;
 import lab.drop.concurrent.Lazy;
 import lab.drop.data.Range;
-import lab.drop.function.Reducer;
-import lab.drop.function.Unsafe;
-import lab.drop.function.UnsafeConsumer;
-import lab.drop.function.UnsafeRunnable;
+import lab.drop.function.*;
 
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
@@ -256,6 +253,22 @@ public abstract class Sugar {
         Objects.requireNonNull(consumer, "Consumer is null.");
         if (Objects.requireNonNull(lazy, "Lazy is null.").isCalculated())
             consumer.accept(lazy.get());
+    }
+
+    /**
+     * Returns a composed unsafe function applying the first function to the input, then the second one to the result of
+     * the first one.
+     * @param first The first function.
+     * @param second The second function.
+     * @param <I> The first function input type.
+     * @param <T> The first function output and second function input type.
+     * @param <O> The second function output type.
+     * @return The composed function.
+     */
+    public static <I, T, O> UnsafeFunction<I, O> compose(UnsafeFunction<I, T> first, UnsafeFunction<T, O> second) {
+        Objects.requireNonNull(first, "First function is null.");
+        Objects.requireNonNull(second, "Second function is null.");
+        return t -> second.apply(first.apply(t));
     }
 
     /**
