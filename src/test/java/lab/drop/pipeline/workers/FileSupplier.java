@@ -10,8 +10,6 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class FileSupplier extends DropSupplier<File> {
-    private static final Supplier<File[]> empty = () -> new File[0];
-
     private final FileFilter filter;
     private final boolean recursive;
     private final LazyRunnable lazyLoadRoot;
@@ -27,14 +25,16 @@ public class FileSupplier extends DropSupplier<File> {
         lazyLoadRoot = new LazyRunnable(() -> fillQueues(root));
     }
 
-    private boolean fillQueues(File directory) {
-        boolean filesQueued = fillQueue(files, directory, filter);
-        boolean directoriesQueued = recursive && fillQueue(directories, directory, File::isDirectory);
-        return filesQueued || directoriesQueued;
+    private void fillQueues(File directory) {
+        fillQueue(files, directory, filter);
+        if (recursive)
+            fillQueue(directories, directory, File::isDirectory);
     }
 
-    private boolean fillQueue(Queue<File> queue, File directory, FileFilter filter) {
-        return queue.addAll(List.of(Objects.requireNonNullElseGet(directory.listFiles(filter), empty)));
+    private void fillQueue(Queue<File> queue, File directory, FileFilter filter) {
+        var filesList = directory.listFiles(filter);
+        if (filesList != null)
+            queue.addAll(List.of(filesList));
     }
 
     @Override
@@ -46,10 +46,11 @@ public class FileSupplier extends DropSupplier<File> {
             return Optional.empty();
         var directory = directories.poll();
         while (directory != null) {
-            if (fillQueues(directory))
-                break;
+            fillQueues(directory);
+            if (!files.isEmpty())
+                return Optional.of(files.remove());
             directory = directories.poll();
         }
-        return get();
+        return Optional.empty();
     }
 }
