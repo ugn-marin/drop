@@ -1,12 +1,11 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
 import lab.drop.function.UnsafeFunction;
 
 import java.util.Objects;
 
 /**
- * A pipeline worker consuming drops from an input pipe, applying a function on them and supplying the output to an
+ * A pipeline worker consuming drops from an input pipe, applying a function to them and supplying the output to an
  * output pipe.
  * @param <I> The input drops type.
  * @param <O> The output drops type.

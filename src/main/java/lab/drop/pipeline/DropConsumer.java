@@ -1,6 +1,5 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
 import lab.drop.function.UnsafeConsumer;
 
 import java.util.Objects;

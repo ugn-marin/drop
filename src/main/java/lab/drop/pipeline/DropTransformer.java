@@ -1,13 +1,12 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
 import lab.drop.function.UnsafeFunction;
 
 import java.util.Collection;
 import java.util.Objects;
 
 /**
- * A pipeline worker consuming drops from an input pipe, applying a function on them and supplying them for an output
+ * A pipeline worker consuming drops from an input pipe, applying a function to them and supplying them for an output
  * supply pipe in the provided order. The transformation function may return 0 to N output drops, thus transforming the
  * index scope of the pipeline workers down the line.
  * @param <I> The input drops type.

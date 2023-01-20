@@ -17,7 +17,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
 
     /**
      * Returns a decorator applying reducer, then the operator on the result.
-     * @param after The operator to apply on the reducer result.
+     * @param after The operator to apply to the reducer result.
      * @return The reducer decorator.
      */
     default Reducer<T> andThen(UnaryOperator<T> after) {
@@ -25,7 +25,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
     }
 
     /**
-     * Returns a decorator applying reducer on non-empty lists, or returning the supplier result on null or empty lists.
+     * Returns a decorator applying reducer to non-empty lists, or returning the supplier result on null or empty lists.
      * @param onNullOrEmpty The supplier to run on null or empty lists.
      * @return The reducer decorator.
      */
@@ -34,7 +34,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
     }
 
     /**
-     * Returns a decorator applying reducer on non-empty lists, or returning null on null or empty lists.
+     * Returns a decorator applying reducer to non-empty lists, or returning null on null or empty lists.
      * @return The reducer decorator.
      */
     default Reducer<T> orElseNull() {
@@ -42,7 +42,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
     }
 
     /**
-     * Returns a decorator applying reducer on non-empty lists, or returning the supplier result on null or empty lists.
+     * Returns a decorator applying reducer to non-empty lists, or returning the supplier result on null or empty lists.
      * @param reducer The reducer.
      * @param onNullOrEmpty The supplier to run on null or empty lists.
      * @param <T> The items type.
@@ -53,7 +53,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
     }
 
     /**
-     * Returns a decorator applying reducer on non-empty lists, or returning null on null or empty lists. Equivalent to:
+     * Returns a decorator applying reducer to non-empty lists, or returning null on null or empty lists. Equivalent to:
      * <pre>
      * Reducer.orElse(reducer, () -> null)
      * </pre>
@@ -66,9 +66,9 @@ public interface Reducer<T> extends Function<List<T>, T> {
     }
 
     /**
-     * Returns a reducer applying a binary operator on non-empty lists as follows: If only one item in the list, it is
+     * Returns a reducer applying a binary operator to non-empty lists as follows: If only one item in the list, it is
      * returned as is, else applied on by the operator with the second item, and the result is applied on by the
-     * operator with subsequent items. In other words, with operator applying on items as (#, #): (((0, 1), 2), 3)...
+     * operator with subsequent items. In other words, with operator applying to items as (#, #): (((0, 1), 2), 3)...
      * @param operator The operator.
      * @param <T> The items type.
      * @return The reducer.

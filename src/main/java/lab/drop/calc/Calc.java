@@ -32,7 +32,7 @@ public abstract class Calc {
     }
 
     /**
-     * Splits the array in half, applies hash64 on each half, returns as a UUID.
+     * Splits the array in half, applies hash64 to each half, returns as a UUID.
      */
     public static UUID hash128(Object... objects) {
         return new UUID(hash64(Arrays.copyOfRange(objects, 0, objects.length / 2)),
