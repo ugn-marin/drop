@@ -2,6 +2,7 @@ package lab.drop.pipeline;
 
 import lab.drop.Sugar;
 import lab.drop.calc.Scale;
+import lab.drop.calc.Units;
 import lab.drop.concurrent.Concurrent;
 import lab.drop.concurrent.Interruptible;
 import lab.drop.flow.Retry;
@@ -11,12 +12,17 @@ import lab.drop.function.UnsafeConsumer;
 import lab.drop.function.UnsafeRunnable;
 import lab.drop.pipeline.monitoring.PipelineWorkerState;
 import lab.drop.pipeline.workers.*;
+import lab.drop.runtime.Environment;
 import org.junit.jupiter.api.*;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -1657,5 +1663,46 @@ public class PipelineTest {
             joined.add(action.getOutput());
         }
         return treeJoin2(builder, joined);
+    }
+
+    @Test
+    void files_print() throws Exception {
+        var files = new SupplyPipe<File>(mediumCapacity);
+        var fileSupplier = new FileSupplier(files, Path.of("D:\\dev\\git\\drop\\src").toFile(), File::isFile, true);
+        var filesToNameInput = new ScopePipe<File>(smallCapacity);
+        var filesToLinesInput = new ScopePipe<File>(smallCapacity);
+        var builder = Pipeline.from(fileSupplier).fork(files, filesToNameInput, filesToLinesInput);
+        var filesNames = new ScopePipe<String>(smallCapacity);
+        var filesToNames = Pipelines.function(filesToNameInput, filesNames, Sugar.compose(File::getAbsolutePath,
+                s -> s + '\n'));
+        var filesLines = new ScopePipe<Long>(smallCapacity);
+        var filesToLines = Pipelines.function(filesToLinesInput, filesLines, 8, file -> {
+            try (var stream = Files.lines(file.toPath())) {
+                return stream.count();
+            }
+        });
+        builder.through(filesToNames, filesToLines);
+        var linesSum = new AtomicLong();
+        var pipeline = builder.into(new Printer<>(System.out, filesNames, 1),
+                Pipelines.consumer(filesLines, linesSum::addAndGet)).build();
+        System.out.println(pipeline);
+        pipeline.run();
+        bottlenecks(pipeline);
+        System.out.println(linesSum);
+    }
+
+    @Test
+    void directory_size() throws Exception {
+        var files = new SupplyPipe<File>(smallCapacity);
+        var fileSupplier = new FileSupplier(files, Path.of(Environment.tempDir()).toFile(), File::isFile, true);
+        var sizes = new ScopePipe<Long>(mediumCapacity);
+        var fileToSize = Pipelines.function(files, sizes, Pipelines.fullConcurrency(), File::length);
+        var sum = new AtomicLong();
+        var sizeToSum = Pipelines.consumer(sizes, sum::addAndGet);
+        var pipeline = Pipeline.from(fileSupplier).through(fileToSize).into(sizeToSum).build();
+        System.out.println(pipeline);
+        pipeline.run();
+        bottlenecks(pipeline);
+        System.out.println(Units.Size.describe(sum.get()));
     }
 }
