@@ -639,27 +639,26 @@ public class Matrix<T> {
             strings.set(x, y, lines.isEmpty() ? string : Sugar.removeFirst(lines));
             additionalLines.set(x, y, lines);
         });
-        int addedRows = 0;
-        for (int y = 0; y < additionalLines.rows(); y++) {
-            var additionalLinesRow = additionalLines.getRow(y);
-            int linesToAdd = additionalLinesRow.stream().mapToInt(List::size).max().orElse(0);
-            if (linesToAdd == 0)
-                continue;
-            for (int i = 0; i < linesToAdd; i++) {
-                final int addedLine = i;
-                strings.addRowAfter(y + addedRows, additionalLinesRow.stream().map(lines ->
-                        lines.size() > addedLine ? lines.get(addedLine) : "").toArray(String[]::new));
-                addedRows++;
-            }
-        }
         if (splitLines) {
+            int addedRows = 0;
+            int addedTop = 0;
+            for (int y = 0; y < rows(); y++) {
+                var additionalLinesRow = additionalLines.getRow(y);
+                int linesToAdd = additionalLinesRow.stream().mapToInt(List::size).max().orElse(0);
+                for (int i = 0; i < linesToAdd; i++) {
+                    final int addedLine = i;
+                    strings.addRowAfter(y + addedRows++, additionalLinesRow.stream().map(lines ->
+                            lines.size() > addedLine ? lines.get(addedLine) : "").toArray(String[]::new));
+                }
+                if (y == 0)
+                    addedTop = linesToAdd;
+            }
             strings.getBlock().forEach((x, y) -> {
                 String string = strings.get(x, y);
                 strings.set(x, y, string + " ".repeat(maxLength[x] - string.length()));
             });
             if (hasHeaders)
-                strings.addRowAfter(additionalLines.getFirstRow().stream().mapToInt(List::size).max().orElse(0),
-                        Arrays.stream(maxLength).mapToObj("-"::repeat).toArray(String[]::new));
+                strings.addRowAfter(addedTop, Arrays.stream(maxLength).mapToObj("-"::repeat).toArray(String[]::new));
         }
         return strings.getRows().stream().map(row -> String.join(cellsDelimiter, row).stripTrailing())
                 .collect(Collectors.joining(rowsDelimiter)).stripTrailing();
