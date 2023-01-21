@@ -65,8 +65,16 @@ public class MatrixTest {
         Assertions.assertTrue(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(0, 0));
         assertData("", matrix);
+        Assertions.assertEquals("", matrix.toTableString());
         Assertions.assertTrue(matrix.getRows().isEmpty());
         Assertions.assertTrue(matrix.getColumns().isEmpty());
+    }
+
+    @Test
+    void header() {
+        Assertions.assertEquals("""
+                Just a header
+                -------------""", new Matrix<>().toTableString("Just a header"));
     }
 
     @Test

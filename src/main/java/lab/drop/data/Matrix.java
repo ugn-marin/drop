@@ -625,8 +625,6 @@ public class Matrix<T> {
      */
     public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault, boolean hasHeaders) {
         Sugar.requireNoneNull(List.of(cellsDelimiter, rowsDelimiter, nullDefault));
-        if (isEmpty())
-            return "";
         Matrix<String> strings = new Matrix<>(size());
         Matrix<List<String>> additionalLines = new Matrix<>(size());
         boolean splitLines = rowsDelimiter.contains("\n");
@@ -646,7 +644,7 @@ public class Matrix<T> {
                 var additionalLinesRow = additionalLines.getRow(y);
                 int linesToAdd = additionalLinesRow.stream().mapToInt(List::size).max().orElse(0);
                 for (int i = 0; i < linesToAdd; i++) {
-                    final int addedLine = i;
+                    int addedLine = i;
                     strings.addRowAfter(y + addedRows++, additionalLinesRow.stream().map(lines ->
                             lines.size() > addedLine ? lines.get(addedLine) : "").toArray(String[]::new));
                 }
