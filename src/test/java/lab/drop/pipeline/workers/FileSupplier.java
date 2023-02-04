@@ -7,7 +7,6 @@ import lab.drop.pipeline.SupplyPipe;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.*;
-import java.util.function.Supplier;
 
 public class FileSupplier extends DropSupplier<File> {
     private final FileFilter filter;
