@@ -20,10 +20,16 @@ public final class Range extends Couple<Integer> {
         return new Range(from, to);
     }
 
+    /**
+     * Returns the <code>from</code> of the range.
+     */
     public int getFrom() {
         return getFirst();
     }
 
+    /**
+     * Returns the <code>to</code> of the range.
+     */
     public int getTo() {
         return getSecond();
     }

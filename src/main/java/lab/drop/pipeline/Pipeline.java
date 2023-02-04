@@ -23,10 +23,6 @@ import java.util.stream.Stream;
  * @param <S> The type of drops supplied at the start of the pipeline.
  */
 public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S> {
-    private static final Converter<Object, Pipe<?>> mainPipeGetter = new Converter<Object, Pipe<?>>()
-            .put(InputWorker.class, InputWorker::getInput).put(OutputWorker.class, OutputWorker::getOutput)
-            .orElseThrow();
-
     private final List<PipelineWorker> pipelineWorkers;
     private final List<PipelineWorker> externalWorkers;
     private final SupplyPipe<S> supplyPipe;
@@ -96,18 +92,21 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S> {
 
     @Override
     public int getCanceledWork() {
-        return pipelineWorkers.stream().mapToInt(PipelineWorker::getCanceledWork).sum();
+        return externalWorkers.stream().mapToInt(PipelineWorker::getCanceledWork).sum();
     }
 
     @Override
     public double getCurrentUtilization() {
-        return externalWorkers.stream().mapToDouble(pw -> pw.getCurrentUtilization() * pw.getConcurrency()).sum() /
-                getConcurrency();
+        return getUtilization(PipelineWorkerMonitoring::getCurrentUtilization);
     }
 
     @Override
     public double getAverageUtilization() {
-        return externalWorkers.stream().mapToDouble(pw -> pw.getAverageUtilization() * pw.getConcurrency()).sum() /
+        return getUtilization(PipelineWorkerMonitoring::getAverageUtilization);
+    }
+
+    private double getUtilization(Function<PipelineWorkerMonitoring, Double> function) {
+        return externalWorkers.stream().mapToDouble(pw -> function.apply(pw) * pw.getConcurrency()).sum() /
                 getConcurrency();
     }
 
@@ -154,7 +153,9 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S> {
             setEndOfInput();
         pipelineWorkers.forEach(pipelineWorker -> pipelineWorker.cancel(getThrowable()));
         Sugar.forEach(Stream.concat(Sugar.instancesOf(pipelineWorkers, InputWorker.class).stream(),
-                Sugar.instancesOf(pipelineWorkers, OutputWorker.class).stream()).map(mainPipeGetter), Pipe::clear);
+                Sugar.instancesOf(pipelineWorkers, OutputWorker.class).stream()).map(new Converter<Object, Pipe<?>>()
+                .put(InputWorker.class, InputWorker::getInput).put(OutputWorker.class, OutputWorker::getOutput)
+                .orElseThrow()), Pipe::clear);
     }
 
     /**

@@ -1,10 +1,11 @@
 package lab.drop.function;
 
+import lab.drop.Sugar;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * A function converting inputs according to their types matching the provided functions map. Inputs that don't match
@@ -39,10 +40,9 @@ public class Converter<I, O> implements Function<I, O> {
      * @param orElse The converting function for inputs that don't match any of the mapped types.
      */
     public Converter(Map<Class<? extends I>, Function<? extends I, O>> matches, Function<? extends I, O> orElse) {
-        this.matches = new HashMap<>(Objects.requireNonNull(matches, "Matches are null.").entrySet().stream()
-                .collect(Collectors.toMap(entry -> Objects.requireNonNull(entry.getKey(), "A match type is null."),
-                        entry -> cast(Objects.requireNonNull(entry.getValue(), "A converting function is null.")))));
-        this.orElse = cast(Objects.requireNonNull(orElse, "Else function is null."));
+        this.matches = new HashMap<>(Objects.requireNonNull(matches, "Matches are null.").size());
+        matches.forEach((key, value) -> put(Sugar.cast(key), value));
+        orElse(orElse);
         reducer = Reducer.from(this::reduce);
     }
 
@@ -55,7 +55,7 @@ public class Converter<I, O> implements Function<I, O> {
      */
     public <S extends I> Converter<I, O> put(Class<S> type, Function<S, O> function) {
         matches.put(Objects.requireNonNull(type, "Type is null."),
-                cast(Objects.requireNonNull(function, "Function is null.")));
+                Sugar.cast(Objects.requireNonNull(function, "Function is null.")));
         return this;
     }
 
@@ -65,7 +65,7 @@ public class Converter<I, O> implements Function<I, O> {
      * @return This converter.
      */
     public Converter<I, O> orElse(Function<? extends I, O> function) {
-        this.orElse = cast(Objects.requireNonNull(function, "Function is null."));
+        this.orElse = Sugar.cast(Objects.requireNonNull(function, "Function is null."));
         return this;
     }
 
@@ -75,11 +75,6 @@ public class Converter<I, O> implements Function<I, O> {
      */
     public Converter<I, O> orElseThrow() {
         return orElse(o -> { throw new IllegalArgumentException("Unmapped input type: " + o + "."); });
-    }
-
-    @SuppressWarnings("unchecked")
-    private Function<I, O> cast(Function<? extends I, O> function) {
-        return (Function<I, O>) function;
     }
 
     private Class<? extends I> reduce(Class<? extends I> c1, Class<? extends I> c2) {
