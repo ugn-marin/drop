@@ -77,18 +77,18 @@ public abstract class Sugar {
     }
 
     /**
-     * Returns a stream of all the enumeration elements, or until reaches null.
+     * Returns a stream of all the enumeration elements.
      */
     public static <T> Stream<T> stream(Enumeration<T> enumeration) {
         return stream(Objects.requireNonNull(enumeration, "Enumeration is null.").asIterator());
     }
 
     /**
-     * Returns a stream of all the iterator elements, or until reaches null.
+     * Returns a stream of all the iterator elements.
      */
     public static <T> Stream<T> stream(Iterator<T> iterator) {
-        Objects.requireNonNull(iterator, "Iterator is null.");
-        return Stream.generate(() -> iterator.hasNext() ? iterator.next() : null).takeWhile(Objects::nonNull);
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(Objects.requireNonNull(iterator,
+                "Iterator is null."), Spliterator.ORDERED), false);
     }
 
     /**
