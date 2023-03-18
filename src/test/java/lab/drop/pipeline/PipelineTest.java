@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PipelineTest {
+class PipelineTest {
     private static final String ABC = "ABCD-EFG-HIJK-LMNOP-QRS-TUV-WXYZ";
     private static final String abc = ABC.toLowerCase();
     private static final String digits = "0123456789";

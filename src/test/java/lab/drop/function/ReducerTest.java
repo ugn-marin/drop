@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class ReducerTest {
+class ReducerTest {
 
     @Test
     void max() {

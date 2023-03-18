@@ -5,7 +5,7 @@ import lab.drop.function.Reducer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class UtilizationCounterTest {
+class UtilizationCounterTest {
     private static final double delta = 0.05;
 
     @Test

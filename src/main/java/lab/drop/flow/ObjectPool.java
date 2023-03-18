@@ -90,7 +90,8 @@ public class ObjectPool<T> implements UnsafeSupplier<T>, Consumer<T> {
         List<Exception> exceptions = new ArrayList<>(size());
         Sugar.acceptWhile(objectsQueue::poll, Objects.requireNonNull(action, "Action is null.")
                 .toHandledConsumer(exceptions::add)::accept, Objects::nonNull);
-        Sugar.throwIfNonNull(exceptionReducer.apply(exceptions));
+        if (!exceptions.isEmpty())
+            Sugar.throwIfNonNull(exceptionReducer.apply(exceptions));
     }
 
     /**

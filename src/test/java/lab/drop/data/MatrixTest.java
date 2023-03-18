@@ -5,7 +5,7 @@ import org.junit.jupiter.api.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MatrixTest {
+class MatrixTest {
 
     @BeforeEach
     void beforeEach(TestInfo testInfo) {

@@ -43,7 +43,7 @@ public class Converter<I, O> implements Function<I, O> {
         this.matches = new HashMap<>(Objects.requireNonNull(matches, "Matches are null.").size());
         matches.forEach((key, value) -> put(Sugar.cast(key), value));
         orElse(orElse);
-        reducer = Reducer.from(this::reduce);
+        reducer = Reducer.from((c1, c2) -> c1.isAssignableFrom(c2) ? c2 : c1);
     }
 
     /**
@@ -75,10 +75,6 @@ public class Converter<I, O> implements Function<I, O> {
      */
     public Converter<I, O> orElseThrow() {
         return orElse(o -> { throw new IllegalArgumentException("Unmapped input type: " + o + "."); });
-    }
-
-    private Class<? extends I> reduce(Class<? extends I> c1, Class<? extends I> c2) {
-        return c1.isAssignableFrom(c2) ? c2 : c1;
     }
 
     @Override

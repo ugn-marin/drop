@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-public class CalcTest {
+class CalcTest {
 
     @Test
     void numericDescription() {
