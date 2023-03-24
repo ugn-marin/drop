@@ -117,6 +117,8 @@ class CalcTest {
         Assertions.assertEquals("28452fyq8fpjauinzwp", U25.hash("Some", null, 900).compact());
         Assertions.assertEquals("dw2pmi7k7m3ycgc1v5n5jj8ke", U25.hash("A", "little", "longer", "array", "of", "objects",
                 1, 2, 3, 4, 5, 6, 7, 8, 9, 0.1, true, false, -222.333, U25.hash("not", "random")).compact());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("Longer than 25 but not a UUID"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("invalid!"));
     }
 
     private void u25(String name, String name25) {
