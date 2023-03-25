@@ -26,7 +26,7 @@ public abstract class Calc {
         for (Object object : objects) {
             result = 31 * result + (object == null ? 0 : object.hashCode());
             if (object != null)
-                result = 19 * result + object.getClass().getName().hashCode();
+                result = 31 * result + object.getClass().getName().hashCode();
         }
         return result;
     }
@@ -40,7 +40,7 @@ public abstract class Calc {
     }
 
     /**
-     * Compresses bytes using a GZIP stream with a default buffer size.
+     * Compresses bytes using a GZIP stream.
      * @param bytes A bytes array.
      * @return A zipped bytes array.
      */
@@ -56,7 +56,7 @@ public abstract class Calc {
     }
 
     /**
-     * Decompresses bytes using a GZIP stream with a default buffer size.
+     * Decompresses bytes using a GZIP stream.
      * @param bytes A bytes array.
      * @return An unzipped bytes array.
      */

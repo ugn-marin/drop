@@ -1,6 +1,5 @@
 package lab.drop.calc;
 
-import lab.drop.Sugar;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -94,7 +93,7 @@ class CalcTest {
         byte[] utf8 = text.getBytes(StandardCharsets.UTF_8);
         byte[] zipped = Calc.zip(utf8);
         System.out.printf("Zipped %s into %s%n", Units.Size.describe(utf8.length), Units.Size.describe(zipped.length));
-        Assertions.assertTrue(zipped.length < utf8.length);
+        Assertions.assertEquals(389, zipped.length);
         byte[] unzipped = Calc.unzip(zipped);
         Assertions.assertEquals(text, new String(unzipped, StandardCharsets.UTF_8));
     }
@@ -105,17 +104,17 @@ class CalcTest {
         u25("10000000-1000-1000-1000-100000000000", "0y3mdbdz8auw3bt6lc7yass8w");
         u25("ffffffff-ffff-ffff-ffff-ffffffffffff", "f5lxx1zz5pnorynqglhzmsp33");
         u25("123e4567-e89b-12d3-a456-426614174000", "12vqjrnxk8whv3i8qi6qgrlz4");
-        System.out.println();
-        Sugar.iterate(10, i -> println(U25.random()));
+        u25("0e5ab0bf-bf70-4ab4-b9c7-689be859581a", "0ulcl9o7s5x5un8t2k4g4zkt6");
+        u25("fd14a171-ebfc-492e-a6e7-9638b123d328", "ezdy2k5hz2lyj44f9w7rbsc2w");
         Assertions.assertEquals("00notthelongestexample123", U25.fromString("NotTheLongestExample123").toString());
         Assertions.assertEquals("3w5e11264sgsh", U25.hash().compact());
         Assertions.assertEquals("3w5e11264sgtb", U25.hash((Object) null).compact());
-        Assertions.assertEquals("7sas223e907nb", U25.hash(0).compact());
-        Assertions.assertEquals("f5lxx1waqdqrlspj48n1edgon", U25.hash(0, 0).compact());
-        Assertions.assertEquals("f5lxx1waqdrg9eudmixcbqmdm", U25.hash(12, 13, 14).compact());
-        Assertions.assertEquals("7sas21szp4ptv", U25.hash("Some object").compact());
-        Assertions.assertEquals("28452fyq8fpjauinzwp", U25.hash("Some", null, 900).compact());
-        Assertions.assertEquals("dw2pmi7k7m3ycgc1v5n5jj8ke", U25.hash("A", "little", "longer", "array", "of", "objects",
+        Assertions.assertEquals("7sas223e907xn", U25.hash(0).compact());
+        Assertions.assertEquals("f5lxx1waqdrvu0ehr72ewiywb", U25.hash(0, 0).compact());
+        Assertions.assertEquals("f5lxx1waqdt0283gdg9r205lm", U25.hash(12, 13, 14).compact());
+        Assertions.assertEquals("7sas21lh64uyj", U25.hash("Some object").compact());
+        Assertions.assertEquals("2a3z97tr1xn2nw8tbd1", U25.hash("Some", null, 900).compact());
+        Assertions.assertEquals("5ihhv3tmia5eqck4ru1qt32v9", U25.hash("A", "little", "longer", "array", "of", "objects",
                 1, 2, 3, 4, 5, 6, 7, 8, 9, 0.1, true, false, -222.333, U25.hash("not", "random")).compact());
         Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("Longer than 25 but not a UUID"));
         Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("invalid!"));
@@ -125,7 +124,9 @@ class CalcTest {
         var u25 = new U25(UUID.fromString(name));
         Assertions.assertEquals(name25, u25.toString());
         Assertions.assertEquals(u25, U25.fromString(name25));
+        Assertions.assertEquals(u25, U25.fromString(name25.toUpperCase()));
         Assertions.assertEquals(u25, U25.fromString(name));
+        Assertions.assertEquals(u25, U25.fromString(name.toUpperCase()));
         Assertions.assertEquals(u25, U25.fromString(u25.compact()));
         Assertions.assertEquals(name, u25.uuid().toString());
         println(u25);
