@@ -143,7 +143,7 @@ public abstract class ManualLayout {
      * @param margin The margin from the left of the reference component.
      */
     public static void stretchRightTowards(Component reference, Component component, int margin) {
-        component.setSize(reference.getX() - component.getX() - margin, component.getY());
+        component.setSize(reference.getX() - component.getX() - margin, component.getHeight());
     }
 
     /**
