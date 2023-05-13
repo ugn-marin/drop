@@ -119,6 +119,7 @@ class MatrixTest {
         matrix.addColumn();
         Assertions.assertTrue(matrix.size().equals(2, 1));
         assertData("null,null", matrix);
+        assertData(matrix, null, null);
     }
 
     @Test
@@ -1423,7 +1424,7 @@ class MatrixTest {
         Assertions.assertEquals("""
                 #1    | Header     | Third
                       | 2          |
-                ----- | ---------- | -------
+                ------|------------|--------
                       | no-newline | yes
                       |            | newline
                 three | 100        | 200

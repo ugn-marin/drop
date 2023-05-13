@@ -612,7 +612,23 @@ public class Matrix<T> {
     public String toTableString(String... headers) {
         var table = map(Sugar::cast);
         table.addRowBefore(0, headers);
-        return table.toString(" | ", "\n", "", true);
+        var tableString = table.toString(" | ", "\n", "", true);
+        if (tableString.isEmpty())
+            return tableString;
+        var splitter = new StringBuilder();
+        var splitters = new HashSet<String>();
+        for (char c : tableString.toCharArray()) {
+            if (c == '-' || c == ' ' || c == '|') {
+                splitter.append(c);
+                continue;
+            }
+            if (!splitter.isEmpty()) {
+                splitters.add(splitter.toString());
+                splitter = new StringBuilder();
+            }
+        }
+        var maxSplitter = splitters.stream().max(Comparator.comparing(String::length)).orElseThrow();
+        return tableString.replace(maxSplitter, maxSplitter.replace("- |", "--|").replace("| -", "|--"));
     }
 
     /**
