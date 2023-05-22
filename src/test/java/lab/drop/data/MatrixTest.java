@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 class MatrixTest {
+    private final MatrixPrinter printer = MatrixPrinter.custom(",", "|", "null", -1);
 
     @BeforeEach
     void beforeEach(TestInfo testInfo) {
@@ -19,7 +20,7 @@ class MatrixTest {
 
     private void assertData(String expected, Matrix<?> matrix) {
         System.out.println(matrix);
-        Assertions.assertEquals(expected, matrix.toString(",", "|", "null", false));
+        Assertions.assertEquals(expected, printer.apply(matrix));
         var columns = matrix.getColumns();
         if (!columns.isEmpty()) {
             int rows = matrix.size().getY();
@@ -65,7 +66,7 @@ class MatrixTest {
         Assertions.assertTrue(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(0, 0));
         assertData("", matrix);
-        Assertions.assertEquals("", matrix.toTableString());
+        Assertions.assertEquals("", MatrixPrinter.table().apply(matrix));
         Assertions.assertTrue(matrix.getRows().isEmpty());
         Assertions.assertTrue(matrix.getColumns().isEmpty());
     }
@@ -74,7 +75,14 @@ class MatrixTest {
     void header() {
         Assertions.assertEquals("""
                 Just a header
-                -------------""", new Matrix<>().toTableString("Just a header"));
+                -------------""", MatrixPrinter.table("Just a header").apply(new Matrix<>()));
+    }
+
+    @Test
+    void header7() {
+        Assertions.assertEquals("""
+                Just...
+                -------""", MatrixPrinter.table(7, "Just a header").apply(new Matrix<>()));
     }
 
     @Test
@@ -1341,6 +1349,16 @@ class MatrixTest {
     }
 
     @Test
+    void turnAround() {
+        var matrix = new Matrix<Character>();
+        matrix.addRow('a', 'b');
+        matrix.addRow('c', 'd');
+        matrix.turnAround();
+        Assertions.assertTrue(matrix.size().equals(2, 2));
+        assertData("d,c|b,a", matrix);
+    }
+
+    @Test
     void equals() {
         var matrix1 = new Matrix<Character>();
         matrix1.addRow('a', 'b');
@@ -1432,7 +1450,27 @@ class MatrixTest {
                 here  |            |
                 1     |            |
                 2     | 2          |
-                      | 3          |""", matrix.toTableString("#1", "Header\n2", "Third"));
+                      | 3          |""", MatrixPrinter.table("#1", "Header\n2", "Third").apply(matrix));
+    }
+
+    @Test
+    void table5() {
+        var matrix = new Matrix<String>();
+        matrix.addRow(null, "no-newline", "yes\nnewline");
+        matrix.addRow("three\nlines\nhere", "100", "200");
+        matrix.addRow("1\n2", "\n2\n3", null);
+        Assertions.assertEquals("""
+                #1    | He... | Third
+                      | 2     |
+                ------|-------|------
+                N/A   | no... | yes
+                      |       | ne...
+                three | 100   | 200
+                lines |       |
+                here  |       |
+                1     |       | N/A
+                2     | 2     |
+                      | 3     |""", MatrixPrinter.table("N/A", 5, "#1", "Header\n2", "Third").apply(matrix));
     }
 
     @Test

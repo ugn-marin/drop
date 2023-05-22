@@ -7,7 +7,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -16,6 +15,7 @@ import java.util.stream.Stream;
  */
 public class Matrix<T> {
     private final List<List<T>> content;
+    private final MatrixPrinter printer = MatrixPrinter.basic();
 
     /**
      * Constructs an empty matrix.
@@ -99,11 +99,15 @@ public class Matrix<T> {
      * nulls, are included. A zero coordinate always means the other coordinate is also zero (matrix is empty).
      */
     public Coordinates size() {
-        return new Coordinates(content.size(), rows());
+        return new Coordinates(columns(), rows());
     }
 
-    private int rows() {
-        return content.isEmpty() ? 0 : Sugar.first(content).size();
+    int rows() {
+        return isEmpty() ? 0 : Sugar.first(content).size();
+    }
+
+    int columns() {
+        return content.size();
     }
 
     private static int validateNegative(int index) {
@@ -193,7 +197,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> getLastColumn() {
-        return getColumn(content.size() - 1);
+        return getColumn(columns() - 1);
     }
 
     /**
@@ -208,7 +212,7 @@ public class Matrix<T> {
      * search is done by columns (column 0 from row 0 to Y, column 1 from row 0 etc.).
      */
     public Coordinates indexOf(T element) {
-        for (int x = 0; x < content.size(); x++) {
+        for (int x = 0; x < columns(); x++) {
             int y = content.get(x).indexOf(element);
             if (y >= 0)
                 return new Coordinates(x, y);
@@ -221,7 +225,7 @@ public class Matrix<T> {
      * search is done by columns (column X from row Y to 0, column X-1 from row Y etc.).
      */
     public Coordinates lastIndexOf(T element) {
-        for (int x = content.size() - 1; x >= 0; x--) {
+        for (int x = columns() - 1; x >= 0; x--) {
             int y = content.get(x).lastIndexOf(element);
             if (y >= 0)
                 return new Coordinates(x, y);
@@ -254,7 +258,7 @@ public class Matrix<T> {
      * Returns a range of the matrix column indexes.
      */
     public Range getColumnsRange() {
-        return Range.of(0, content.size());
+        return Range.of(0, columns());
     }
 
     /**
@@ -299,10 +303,10 @@ public class Matrix<T> {
     public final void addRowBefore(int y, T... row) {
         if (validateNegative(y) > rows())
             throw new IndexOutOfBoundsException("Row " + y + " can't be added having a total of " + rows() + ".");
-        boolean wasEmpty = content.isEmpty();
+        boolean wasEmpty = isEmpty();
         if (wasEmpty)
             content.add(Sugar.fill(1));
-        Sugar.iterate(Math.max(row.length - content.size(), 0), i -> addColumn());
+        Sugar.iterate(Math.max(row.length - columns(), 0), i -> addColumn());
         getColumnsRange().forEach(x -> content.get(x).add(y, x < row.length ? row[x] : null));
         if (wasEmpty)
             removeRow(y + 1);
@@ -333,7 +337,7 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addColumn(T... column) {
-        addColumnBefore(content.size(), column);
+        addColumnBefore(columns(), column);
     }
 
     /**
@@ -350,10 +354,10 @@ public class Matrix<T> {
      */
     @SafeVarargs
     public final void addColumnBefore(int x, T... column) {
-        if (validateNegative(x) > content.size())
-            throw new IndexOutOfBoundsException("Column " + x + " can't be added having a total of " + content.size() +
+        if (validateNegative(x) > columns())
+            throw new IndexOutOfBoundsException("Column " + x + " can't be added having a total of " + columns() +
                     ".");
-        boolean wasEmpty = content.isEmpty();
+        boolean wasEmpty = isEmpty();
         Sugar.iterate(Math.max(column.length - rows(), 0), i -> addRow());
         List<T> columnContent = Sugar.fill(Math.max(rows(), 1));
         for (int y = 0; y < rows() && y < column.length; y++)
@@ -418,8 +422,8 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> removeColumn(int x) {
-        if (validateNegative(x) >= content.size())
-            throw new IndexOutOfBoundsException("Column " + x + " doesn't exist in a total of " + content.size() + ".");
+        if (validateNegative(x) >= columns())
+            throw new IndexOutOfBoundsException("Column " + x + " doesn't exist in a total of " + columns() + ".");
         return content.remove(x);
     }
 
@@ -438,7 +442,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the matrix is empty.
      */
     public List<T> removeLastColumn() {
-        return removeColumn(content.size() - 1);
+        return removeColumn(columns() - 1);
     }
 
     /**
@@ -454,7 +458,7 @@ public class Matrix<T> {
     public final List<T> setRow(int y, T... row) {
         var previous = removeRow(y);
         addRowBefore(y, row);
-        Sugar.iterate(Math.max(previous.size() - content.size(), 0), i -> addColumn());
+        Sugar.iterate(Math.max(previous.size() - columns(), 0), i -> addColumn());
         return previous;
     }
 
@@ -591,6 +595,14 @@ public class Matrix<T> {
         reverseY();
     }
 
+    /**
+     * Turns the matrix 180 degrees.
+     */
+    public void turnAround() {
+        reverseX();
+        reverseY();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -603,79 +615,7 @@ public class Matrix<T> {
 
     @Override
     public String toString() {
-        return toString(" ", "\n", "", false);
-    }
-
-    /**
-     * Generates a table-like representation of the matrix with the provided headers.
-     */
-    public String toTableString(String... headers) {
-        var table = map(Sugar::cast);
-        table.addRowBefore(0, headers);
-        var tableString = table.toString(" | ", "\n", "", true);
-        if (tableString.isEmpty())
-            return tableString;
-        var splitter = new StringBuilder();
-        var splitters = new HashSet<String>();
-        for (char c : tableString.toCharArray()) {
-            if (c == '-' || c == ' ' || c == '|') {
-                splitter.append(c);
-                continue;
-            }
-            if (!splitter.isEmpty()) {
-                splitters.add(splitter.toString());
-                splitter = new StringBuilder();
-            }
-        }
-        var maxSplitter = splitters.stream().max(Comparator.comparing(String::length)).orElseThrow();
-        return tableString.replace(maxSplitter, maxSplitter.replace("- |", "--|").replace("| -", "|--"));
-    }
-
-    /**
-     * Returns a custom string representation of the matrix using the provided parameters.
-     * @param cellsDelimiter The delimiter between cells in a row. Default is space.
-     * @param rowsDelimiter The delimiter between rows. Default is newline.
-     * @param nullDefault The representation of null cells. Default is empty string.
-     * @param hasHeaders True if the first row is to be considered as headers. Default is false.
-     * @return The string representation of the matrix.
-     */
-    public String toString(String cellsDelimiter, String rowsDelimiter, String nullDefault, boolean hasHeaders) {
-        Sugar.requireNoneNull(List.of(cellsDelimiter, rowsDelimiter, nullDefault));
-        Matrix<String> strings = new Matrix<>(size());
-        Matrix<List<String>> additionalLines = new Matrix<>(size());
-        boolean splitLines = rowsDelimiter.contains("\n");
-        int[] maxLength = new int[content.size()];
-        getBlock().forEach((x, y) -> {
-            String string = Objects.toString(get(x, y), nullDefault);
-            var lines = new ArrayList<>(splitLines ? string.lines().toList() : List.of(string));
-            if (splitLines)
-                maxLength[x] = Math.max(maxLength[x], lines.stream().mapToInt(String::length).max().orElse(0));
-            strings.set(x, y, lines.isEmpty() ? string : Sugar.removeFirst(lines));
-            additionalLines.set(x, y, lines);
-        });
-        if (splitLines) {
-            int addedRows = 0;
-            int addedTop = 0;
-            for (int y = 0; y < rows(); y++) {
-                var additionalLinesRow = additionalLines.getRow(y);
-                int linesToAdd = additionalLinesRow.stream().mapToInt(List::size).max().orElse(0);
-                for (int i = 0; i < linesToAdd; i++) {
-                    int addedLine = i;
-                    strings.addRowAfter(y + addedRows++, additionalLinesRow.stream().map(lines ->
-                            lines.size() > addedLine ? lines.get(addedLine) : "").toArray(String[]::new));
-                }
-                if (y == 0)
-                    addedTop = linesToAdd;
-            }
-            strings.getBlock().forEach((x, y) -> {
-                String string = strings.get(x, y);
-                strings.set(x, y, string + " ".repeat(maxLength[x] - string.length()));
-            });
-            if (hasHeaders)
-                strings.addRowAfter(addedTop, Arrays.stream(maxLength).mapToObj("-"::repeat).toArray(String[]::new));
-        }
-        return strings.getRows().stream().map(row -> String.join(cellsDelimiter, row).stripTrailing())
-                .collect(Collectors.joining(rowsDelimiter)).stripTrailing();
+        return printer.apply(this);
     }
 
     /**
