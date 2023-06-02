@@ -79,6 +79,36 @@ class MatrixTest {
     }
 
     @Test
+    void header2() {
+        var matrix = new Matrix<Integer>();
+        matrix.addRow(1, 2);
+        Assertions.assertEquals("""
+                Just a header |
+                --------------|--
+                1             | 2""", MatrixPrinter.table("Just a header").apply(matrix));
+    }
+
+    @Test
+    void header2null() {
+        var matrix = new Matrix<Integer>();
+        matrix.addRow(1, 2);
+        Assertions.assertEquals("""
+                Just a header | Nil
+                --------------|----
+                1             | 2""", MatrixPrinter.table("Nil", 0, "Just a header").apply(matrix));
+    }
+
+    @Test
+    void header3() {
+        var matrix = new Matrix<Integer>();
+        matrix.addRow(1);
+        Assertions.assertEquals("""
+                Just a header | 2
+                --------------|--
+                1             |""", MatrixPrinter.table("Just a header", "2").apply(matrix));
+    }
+
+    @Test
     void header7() {
         Assertions.assertEquals("""
                 Just...
@@ -90,6 +120,8 @@ class MatrixTest {
         var matrix = new Matrix<Integer>(3, 2);
         Assertions.assertFalse(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(3, 2));
+        Assertions.assertEquals(2, matrix.rows());
+        Assertions.assertEquals(3, matrix.columns());
         assertData("null,null,null|null,null,null", matrix);
     }
 

@@ -102,11 +102,17 @@ public class Matrix<T> {
         return new Coordinates(columns(), rows());
     }
 
-    int rows() {
+    /**
+     * Returns the number of rows in the matrix.
+     */
+    public int rows() {
         return isEmpty() ? 0 : Sugar.first(content).size();
     }
 
-    int columns() {
+    /**
+     * Returns the number of columns in the matrix.
+     */
+    public int columns() {
         return content.size();
     }
 
