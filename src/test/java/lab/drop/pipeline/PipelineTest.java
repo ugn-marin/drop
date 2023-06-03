@@ -1676,7 +1676,7 @@ class PipelineTest {
     @Test
     void files_print() throws Exception {
         var files = new SupplyPipe<File>(mediumCapacity);
-        var fileSupplier = new FileSupplier(files, Path.of("D:\\dev\\git\\drop\\src").toFile(), File::isFile, true);
+        var fileSupplier = new FileSupplier(files, Path.of(Environment.workingDir()).toFile(), File::isFile, true);
         var filesToNameInput = new ScopePipe<File>(smallCapacity);
         var filesToLinesInput = new ScopePipe<File>(smallCapacity);
         var filesToLineLengthsInput = new ScopePipe<File>(smallCapacity);
@@ -1708,6 +1708,7 @@ class PipelineTest {
         pipeline.run();
         bottlenecks(pipeline);
         System.out.println(linesSum);
+        Assertions.assertTrue(linesSum.get() > 5000);
     }
 
     @Test
