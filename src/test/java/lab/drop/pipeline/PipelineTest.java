@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -1671,20 +1672,27 @@ class PipelineTest {
         var fileSupplier = new FileSupplier(files, Path.of("D:\\dev\\git\\drop\\src").toFile(), File::isFile, true);
         var filesToNameInput = new ScopePipe<File>(smallCapacity);
         var filesToLinesInput = new ScopePipe<File>(smallCapacity);
-        var builder = Pipeline.from(fileSupplier).fork(files, filesToNameInput, filesToLinesInput);
+        var filesToLineLengthsInput = new ScopePipe<File>(smallCapacity);
+        var builder = Pipeline.from(fileSupplier).fork(files, filesToNameInput, filesToLinesInput, filesToLineLengthsInput);
         var filesNames = new ScopePipe<String>(smallCapacity);
         var filesToNames = Pipelines.function(filesToNameInput, filesNames, Sugar.compose(File::getAbsolutePath,
                 s -> s + '\n'));
         var filesLines = new ScopePipe<Long>(smallCapacity);
+        var filesLineLengths = new SupplyPipe<Map.Entry<String, Integer>>(mediumCapacity, entry -> entry.getValue() > 120);
         var filesToLines = Pipelines.function(filesToLinesInput, filesLines, 8, file -> {
             try (var stream = Files.lines(file.toPath())) {
                 return stream.count();
             }
         });
-        builder.through(filesToNames, filesToLines);
+        var filesToLineLengths = Pipelines.transformer(filesToLineLengthsInput, filesLineLengths, file -> {
+            try (var stream = Files.lines(file.toPath())) {
+                return stream.collect(Collectors.toMap(line -> '\n' + line, String::length, (a, b) -> a)).entrySet();
+            }
+        }, null);
+        builder.through(filesToNames, filesToLines).through(filesToLineLengths);
         var linesSum = new AtomicLong();
         var pipeline = builder.into(new Printer<>(System.out, filesNames, 1),
-                Pipelines.consumer(filesLines, linesSum::addAndGet)).build();
+                Pipelines.consumer(filesLines, linesSum::addAndGet), new Printer<>(System.err, filesLineLengths, 1)).build();
         System.out.println(pipeline);
         pipeline.run();
         bottlenecks(pipeline);
