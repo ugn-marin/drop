@@ -19,7 +19,7 @@ public class MatrixPrinter implements Function<Matrix<?>, String> {
     private final String[] headers;
 
     private MatrixPrinter(String columnsDelimiter, String rowsDelimiter, String nullDefault, int cellLength,
-                         boolean hasHeaders, String... headers) {
+                          boolean hasHeaders, String... headers) {
         this.columnsDelimiter = Objects.requireNonNullElse(columnsDelimiter, " ");
         this.rowsDelimiter = Objects.requireNonNullElse(rowsDelimiter, "\n");
         this.nullDefault = Objects.requireNonNullElse(nullDefault, "");
