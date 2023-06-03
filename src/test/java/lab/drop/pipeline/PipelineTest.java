@@ -366,7 +366,8 @@ class PipelineTest {
         Pipe<Character> upper = new ScopePipe<>(smallCapacity);
         CharUpperFunction charUpperFunction = new CharUpperFunction(lower, upper, 1);
         CharAccumulator charAccumulator = new CharAccumulator(upper, 1);
-        var pipeline = Pipeline.from(charSupplier).through(charLowerFunction, charUpperFunction).into(charAccumulator).build();
+        var pipeline = Pipeline.from(charSupplier).through(charLowerFunction, charUpperFunction).into(charAccumulator)
+                .build();
         System.out.println(pipeline);
         pipeline.run();
         assertEquals(five.toUpperCase(), charAccumulator.getValue());
@@ -382,7 +383,8 @@ class PipelineTest {
         Pipe<Character> upper = new ScopePipe<>(smallCapacity);
         CharUpperFunction charUpperFunction = new CharUpperFunction(lower, upper, 1);
         CharAccumulator charAccumulator = new CharAccumulator(upper, 1);
-        var pipeline = Pipeline.from(charSupplier).through(charLowerFunction, charUpperFunction).into(charAccumulator).build();
+        var pipeline = Pipeline.from(charSupplier).through(charLowerFunction, charUpperFunction).into(charAccumulator)
+                .build();
         System.out.println(pipeline);
         pipeline.run();
         assertEquals(five.toUpperCase(), charAccumulator.getValue());
@@ -938,7 +940,8 @@ class PipelineTest {
         Pipe<String> toPrint = new ScopePipe<>(mediumCapacity);
         var consumer = Pipelines.consumer(toAccum, s -> wordsCount.incrementAndGet());
         var printer = new Printer<>(System.out, toPrint, 1);
-        var pipeline = Pipeline.from(supplier).through(transformer).fork(transformer, consumer, printer).into(consumer, printer)
+        var pipeline = Pipeline.from(supplier).through(transformer).fork(transformer, consumer, printer)
+                .into(consumer, printer)
                 .build(PipelineWarning.UNBALANCED_FORK);
         System.out.println(pipeline);
         pipeline.run();
@@ -952,7 +955,8 @@ class PipelineTest {
     @Test
     void supplier1_transformer1conditional_fork_printer_counter() throws Exception {
         var supplier = new CharSupplier(five, new SupplyPipe<>(largeCapacity), 1);
-        var transformer = new WordsTransformer(supplier.getOutput(), new SupplyPipe<>(mediumCapacity, s -> s.length() <= 2), 1);
+        var transformer = new WordsTransformer(supplier.getOutput(), new SupplyPipe<>(mediumCapacity,
+                s -> s.length() <= 2), 1);
         final AtomicInteger wordsCount = new AtomicInteger();
         Pipe<String> toAccum = new ScopePipe<>(smallCapacity);
         Pipe<String> toPrint = new ScopePipe<>(mediumCapacity);
@@ -994,7 +998,8 @@ class PipelineTest {
     void supplier1_transformer1_forward() throws Exception {
         var supplier = new CharSupplier(five, new SupplyPipe<>(smallCapacity), 1);
         var transformer = new WordsTransformer(supplier.getOutput(), new SupplyPipe<>(1), 1);
-        var pipeline = Pipeline.from(supplier).through(transformer).into(transformer.forward(System.out::println)).build();
+        var pipeline = Pipeline.from(supplier).through(transformer).into(transformer.forward(System.out::println))
+                .build();
         System.out.println(pipeline);
         pipeline.run();
         bottlenecks(pipeline);
@@ -1418,7 +1423,8 @@ class PipelineTest {
     void split() throws Exception {
         final var even = new StringBuilder();
         final var odd = new StringBuilder();
-        final var pipeline = Pipelines.<Integer>split(new ConditionalConsumer<>(n -> n % 2 == 0, even::append, odd::append));
+        final var pipeline = Pipelines.<Integer>split(new ConditionalConsumer<>(n -> n % 2 == 0,
+                even::append, odd::append));
         System.out.println(pipeline);
         Concurrent.run(() -> {
             for (int i = 0; i < 10; i++)
@@ -1476,12 +1482,12 @@ class PipelineTest {
         pipeline.run();
         assertEquals(full.length(), joinedAccum.getValue().length());
         assertEquals("""
-                        Pipeline of 6 workers on 11 working threads:
-                        CharSupplier -<SP:10>- fork +<IP:11>- F ----------------<IP:21>-+ join ----<IP:1>- CharAccumulator
-                                                    +<IP:12>----------------------------+
-                                                    +<IP:13>- A[6] -------------<IP:31>-+
-                                                    +<IP:14>- WordsTransformer -<S?P:10>- Printer
-                        Warning: Unbalanced fork detected.""", pipeline.toString());
+                Pipeline of 6 workers on 11 working threads:
+                CharSupplier -<SP:10>- fork +<IP:11>- F ----------------<IP:21>-+ join ----<IP:1>- CharAccumulator
+                                            +<IP:12>----------------------------+
+                                            +<IP:13>- A[6] -------------<IP:31>-+
+                                            +<IP:14>- WordsTransformer -<S?P:10>- Printer
+                Warning: Unbalanced fork detected.""", pipeline.toString());
         assertTrue(pipeline.getComponentsMonitoringMatrix().size().equals(9, 4));
         bottlenecks(pipeline);
     }
@@ -1659,7 +1665,8 @@ class PipelineTest {
             for (int j = 0; j < group; j++)
                 inputs[j] = joins.get(i + j);
             Pipe<Integer> output = new ScopePipe<>(group);
-            DropAction<Integer> action = Pipelines.action(output, new ScopePipe<>(group), n -> actionsRun.incrementAndGet());
+            DropAction<Integer> action = Pipelines.action(output, new ScopePipe<>(group),
+                    n -> actionsRun.incrementAndGet());
             builder.join(output, inputs).through(action);
             joined.add(action.getOutput());
         }
@@ -1673,12 +1680,14 @@ class PipelineTest {
         var filesToNameInput = new ScopePipe<File>(smallCapacity);
         var filesToLinesInput = new ScopePipe<File>(smallCapacity);
         var filesToLineLengthsInput = new ScopePipe<File>(smallCapacity);
-        var builder = Pipeline.from(fileSupplier).fork(files, filesToNameInput, filesToLinesInput, filesToLineLengthsInput);
+        var builder = Pipeline.from(fileSupplier).fork(files, filesToNameInput, filesToLinesInput,
+                filesToLineLengthsInput);
         var filesNames = new ScopePipe<String>(smallCapacity);
         var filesToNames = Pipelines.function(filesToNameInput, filesNames, Sugar.compose(File::getAbsolutePath,
                 s -> s + '\n'));
         var filesLines = new ScopePipe<Long>(smallCapacity);
-        var filesLineLengths = new SupplyPipe<Map.Entry<String, Integer>>(mediumCapacity, entry -> entry.getValue() > 120);
+        var filesLineLengths = new SupplyPipe<Map.Entry<String, Integer>>(mediumCapacity,
+                entry -> entry.getValue() > 120);
         var filesToLines = Pipelines.function(filesToLinesInput, filesLines, 8, file -> {
             try (var stream = Files.lines(file.toPath())) {
                 return stream.count();
@@ -1686,13 +1695,15 @@ class PipelineTest {
         });
         var filesToLineLengths = Pipelines.transformer(filesToLineLengthsInput, filesLineLengths, file -> {
             try (var stream = Files.lines(file.toPath())) {
-                return stream.collect(Collectors.toMap(line -> '\n' + line, String::length, (a, b) -> a)).entrySet();
+                return stream.collect(Collectors.toMap(line -> '\n' + file.getName() + ":\n" + line, String::length,
+                        (a, b) -> a)).entrySet();
             }
         }, null);
         builder.through(filesToNames, filesToLines).through(filesToLineLengths);
         var linesSum = new AtomicLong();
         var pipeline = builder.into(new Printer<>(System.out, filesNames, 1),
-                Pipelines.consumer(filesLines, linesSum::addAndGet), new Printer<>(System.err, filesLineLengths, 1)).build();
+                Pipelines.consumer(filesLines, linesSum::addAndGet), new Printer<>(System.err, filesLineLengths, 1))
+                .build();
         System.out.println(pipeline);
         pipeline.run();
         bottlenecks(pipeline);
