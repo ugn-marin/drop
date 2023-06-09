@@ -123,6 +123,7 @@ class MatrixTest {
         Assertions.assertEquals(2, matrix.rows());
         Assertions.assertEquals(3, matrix.columns());
         assertData("null,null,null|null,null,null", matrix);
+        Assertions.assertEquals("", matrix.toString());
     }
 
     @Test
@@ -202,6 +203,11 @@ class MatrixTest {
         matrix.addColumn(7, 8, 9, 10);
         Assertions.assertTrue(matrix.size().equals(4, 4));
         assertData("1,null,null,7|2,3,null,8|4,5,6,9|null,null,null,10", matrix);
+        Assertions.assertEquals("""
+                1     7
+                2 3   8
+                4 5 6 9
+                      10""", matrix.toString());
     }
 
     @Test
@@ -257,6 +263,9 @@ class MatrixTest {
         matrix.set(1, 1, 'd');
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
+        Assertions.assertEquals("""
+                a b
+                c d""", matrix.toString());
     }
 
     @Test
@@ -898,6 +907,10 @@ class MatrixTest {
         assertData(matrix.setRow(0), 'a', 'b', 'c');
         Assertions.assertTrue(matrix.size().equals(3, 3));
         assertData("null,null,null|d,e,f|g,h,i", matrix);
+        Assertions.assertEquals("""
+                
+                d e f
+                g h i""", matrix.toString());
     }
 
     @Test
@@ -924,6 +937,9 @@ class MatrixTest {
         assertData(matrix.setRow(2), 'g', 'h', 'i');
         Assertions.assertTrue(matrix.size().equals(3, 3));
         assertData("a,b,c|d,e,f|null,null,null", matrix);
+        Assertions.assertEquals("""
+                a b c
+                d e f""", matrix.toString());
     }
 
     @Test
