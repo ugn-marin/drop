@@ -274,7 +274,7 @@ class PipelineTest {
         System.out.println(pipeline);
         pipeline.stop();
         pipeline.run();
-        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
+        assertEquals(PipelineWorkerState.Aborted, pipeline.getState());
     }
 
     @Test
@@ -286,7 +286,7 @@ class PipelineTest {
             pipeline.run();
             fail("Not interrupted");
         } catch (InterruptedException ignore) {}
-        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
+        assertEquals(PipelineWorkerState.Aborted, pipeline.getState());
     }
 
     @Test
@@ -318,7 +318,7 @@ class PipelineTest {
 
             @Override
             protected void close() {
-                assertEquals(PipelineWorkerState.Canceling, getState());
+                assertEquals(PipelineWorkerState.Aborting, getState());
             }
         });
         System.out.println(pipeline);
@@ -327,7 +327,7 @@ class PipelineTest {
             pipeline.run();
             fail();
         } catch (NumberFormatException ignore) {}
-        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
+        assertEquals(PipelineWorkerState.Aborted, pipeline.getState());
     }
 
     @Test
@@ -842,7 +842,7 @@ class PipelineTest {
             pipeline.push(i);
         pipeline.setEndOfInput();
         pipeline.await();
-        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
+        assertEquals(PipelineWorkerState.Aborted, pipeline.getState());
         try {
             future.get();
             fail();
@@ -867,7 +867,7 @@ class PipelineTest {
             pipeline.setEndOfInput();
         });
         pipeline.await();
-        assertEquals(PipelineWorkerState.Canceled, pipeline.getState());
+        assertEquals(PipelineWorkerState.Aborted, pipeline.getState());
         try {
             future.get();
             fail();

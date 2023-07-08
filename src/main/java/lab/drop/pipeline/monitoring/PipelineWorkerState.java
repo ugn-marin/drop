@@ -21,7 +21,7 @@ public enum PipelineWorkerState {
     /**
      * The worker failed or was canceled, and is still closing.
      */
-    Canceling,
+    Aborting,
     /**
      * All internal work is done, and the worker finished closing.
      */
@@ -29,5 +29,5 @@ public enum PipelineWorkerState {
     /**
      * The worker failed or was canceled, and finished closing (or closing failed).
      */
-    Canceled
+    Aborted
 }

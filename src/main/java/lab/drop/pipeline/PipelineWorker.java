@@ -38,7 +38,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     private UtilizationCounter utilizationCounter;
     private Retry.Builder retryBuilder;
     private Throwable throwable;
-    private PipelineWorkerState state;
+    private PipelineWorkerState state = PipelineWorkerState.Ready;
 
     PipelineWorker(boolean internal, int concurrency) {
         this.internal = internal;
@@ -68,7 +68,6 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
         threadIndexes = new ConcurrentHashMap<>(concurrency);
         if (!internal)
             utilizationCounter = new UtilizationCounter(concurrency);
-        state = PipelineWorkerState.Ready;
     }
 
     /**
@@ -109,7 +108,9 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
 
     /**
      * Executes the worker synchronously until all internal work is done, or an exception is thrown.
-     * @throws Exception An exception terminating the pipeline. May come from a worker, or the cancel argument.
+     * @throws Exception An exception terminating the pipeline. May come from a worker, or the cancel argument. A worker
+     * implementation may throw an exception at any stage, including the <code>close</code> function. Any exception that
+     * isn't the first to register will be added to the first exception's suppressed exceptions list.
      */
     @Override
     public void run() throws Exception {
@@ -119,13 +120,13 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
         Sugar.runSteps(Stream.of(
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::start),
                         Sugar.glue(this::work, () -> Sugar.maybe(executorService, Concurrent::join)),
-                        () -> state = throwable != null ? PipelineWorkerState.Canceling : PipelineWorkerState.Closing,
+                        () -> state = throwable != null ? PipelineWorkerState.Aborting : PipelineWorkerState.Closing,
                         this::close,
                         this::internalClose,
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::stop),
                         () -> executorService.maybe(ExecutorService::shutdown)).iterator(),
                 this::setThrowable);
-        state = throwable != null ? PipelineWorkerState.Canceled : PipelineWorkerState.Done;
+        state = throwable != null ? PipelineWorkerState.Aborted : PipelineWorkerState.Done;
         latch.release();
         if (!(throwable instanceof SilentStop))
             Sugar.throwIfNonNull(throwable);
@@ -246,8 +247,8 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     abstract void work() throws Exception;
 
     /**
-     * Called automatically when the worker is done executing or failed. The worker state during this method will be
-     * either Closing if finished normally, or Cancelling if work was canceled, failed or interrupted.
+     * Called automatically when the worker is done executing or aborted. The worker state during this method will be
+     * either Closing if finished normally, or Aborting if work was canceled, failed or interrupted.
      * @throws Exception A possible exception from the closing logic. Will be thrown by the pipeline if and only if it
      * isn't already in the process of throwing a different exception.
      */

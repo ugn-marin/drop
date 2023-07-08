@@ -128,7 +128,8 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S> {
 
     /**
      * Cancels the execution of all internal work, interrupts if possible. Does not wait for work to stop. The pipeline
-     * will not throw an exception as a result of this operation. Equivalent to:
+     * will not throw an exception as a result of this operation, even if a <code>close</code> implementation throws it.
+     * Equivalent to:
      * <pre>
      * cancel(null)
      * </pre>
