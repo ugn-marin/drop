@@ -39,7 +39,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
      * @param name The name of the pipe.
      */
     protected Pipe(int baseCapacity, String name) {
-        this.baseCapacity = Sugar.requireRange(baseCapacity, 1, null);
+        this.baseCapacity = Sugar.requirePositive(baseCapacity);
         this.name = name;
         inOrderQueue = new ArrayBlockingQueue<>(baseCapacity, true);
         outOfOrderDrops = new HashMap<>();

@@ -22,7 +22,7 @@ public class UtilizationCounter {
      * @param concurrency The concurrency level of the measured work.
      */
     public UtilizationCounter(int concurrency) {
-        this.concurrency = Sugar.requireRange(concurrency, 1, null);
+        this.concurrency = Sugar.requirePositive(concurrency);
     }
 
     /**

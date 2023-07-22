@@ -19,7 +19,7 @@ public class Limiter {
      * @param limit The limit.
      */
     public Limiter(int limit) {
-        this.limit = Sugar.requireRange(limit, 1, null);
+        this.limit = Sugar.requirePositive(limit);
     }
 
     /**

@@ -338,6 +338,13 @@ public abstract class Sugar {
     }
 
     /**
+     * Validates that the value is a positive integer.
+     */
+    public static int requirePositive(int value) {
+        return requireRange(value, 1, null);
+    }
+
+    /**
      * Validates that the array is not null or empty.
      * @param objects The array.
      * @param <T> The members type.
