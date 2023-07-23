@@ -164,6 +164,6 @@ public class MatrixPrinter implements Function<Matrix<?>, String> {
         }
         splitters.add(splitter.toString());
         var maxSplitter = splitters.stream().max(Comparator.comparing(String::length)).orElseThrow();
-        return tableString.replace(maxSplitter, maxSplitter.replace("- |", "--|").replace("| -", "|--"));
+        return tableString.replace(maxSplitter, Sugar.replace(maxSplitter, "- |", "--|", "| -", "|--"));
     }
 }
