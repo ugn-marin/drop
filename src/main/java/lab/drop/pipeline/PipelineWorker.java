@@ -117,12 +117,10 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
         oneShot.check("The pipeline worker instance cannot be reused.");
         state = PipelineWorkerState.Running;
         var optionalUtilizationCounter = Optional.ofNullable(utilizationCounter);
-        Sugar.runSteps(Stream.of(
-                        () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::start),
-                        Sugar.glue(this::work, () -> Sugar.maybe(executorService, Concurrent::join)),
+        Sugar.runSteps(Stream.of(() -> optionalUtilizationCounter.ifPresent(UtilizationCounter::start),
+                        Sugar.merge(this::work, () -> Sugar.maybe(executorService, Concurrent::join)),
                         () -> state = throwable != null ? PipelineWorkerState.Aborting : PipelineWorkerState.Closing,
-                        this::close,
-                        this::internalClose,
+                        this::close, this::internalClose,
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::stop),
                         () -> executorService.maybe(ExecutorService::shutdown)).iterator(),
                 this::setThrowable);

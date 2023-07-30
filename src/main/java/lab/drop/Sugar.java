@@ -272,11 +272,11 @@ public abstract class Sugar {
     }
 
     /**
-     * Returns an unsafe runnable running the provided unsafe runnable steps one by one.
+     * Returns an unsafe runnable running the provided unsafe runnable tasks one by one.
      */
-    public static UnsafeRunnable glue(UnsafeRunnable... steps) {
-        requireFull(steps);
-        return () -> forEach(Stream.of(steps), UnsafeRunnable::run);
+    public static UnsafeRunnable merge(UnsafeRunnable... tasks) {
+        requireFull(tasks);
+        return () -> forEach(Stream.of(tasks), UnsafeRunnable::run);
     }
 
     /**

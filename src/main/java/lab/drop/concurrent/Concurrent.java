@@ -47,6 +47,19 @@ public abstract class Concurrent {
     }
 
     /**
+     * Returns an unsafe runnable running the provided unsafe runnable tasks in the cached pool. Equivalent to:
+     * <pre>
+     * () -> Concurrent.run(exceptionsReducer, tasks)
+     * </pre>
+     * @param exceptionsReducer A reducer of the tasks exceptions list, returning the exception to throw.
+     * @param tasks The tasks.
+     * @return An unsafe runnable waiting for all tasks completion.
+     */
+    public static UnsafeRunnable merge(Reducer<Exception> exceptionsReducer, UnsafeRunnable... tasks) {
+        return () -> run(exceptionsReducer, tasks);
+    }
+
+    /**
      * Submits several unsafe runnable tasks into the cached pool, waits for all tasks completion.
      * @param exceptionsReducer A reducer of the tasks exceptions list, returning the exception to throw.
      * @param tasks The tasks.
