@@ -44,7 +44,10 @@ public class U25 {
             var length = Math.min(bytes.length, 16);
             buffer.put(16 - length, bytes, bytes.length == 17 ? 1 : 0, length);
             buffer.rewind();
-            return new U25(new UUID(buffer.getLong(), buffer.getLong()));
+            var u25 = new U25(new UUID(buffer.getLong(), buffer.getLong()));
+            if (string.length() == 25 && !string.equalsIgnoreCase(u25.string))
+                throw new NumberFormatException("Value is out of range.");
+            return u25;
         } catch (RuntimeException e) {
             throw new IllegalArgumentException("Invalid U25 string: " + string + ".", e);
         }
