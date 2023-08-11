@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -74,8 +73,8 @@ public abstract class Concurrent {
      * @param futures The futures.
      */
     public static void getAll(Reducer<Exception> exceptionsReducer, Future<?>... futures) throws Exception {
-        Function<Future<?>, UnsafeRunnable> get = future -> future::get;
-        Sugar.runSteps(Stream.of(Sugar.requireFull(futures)).map(get).iterator(), exceptionsReducer);
+        Sugar.runSteps(Stream.of(Sugar.requireFull(futures)).map(future -> (UnsafeRunnable) future::get).iterator(),
+                exceptionsReducer);
     }
 
     /**
