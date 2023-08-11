@@ -100,22 +100,22 @@ class CalcTest {
 
     @Test
     void u25() {
-        u25("00000000-0000-0000-0000-000000000000", "0000000000000000000000000");
-        u25("10000000-1000-1000-1000-100000000000", "0y3mdbdz8auw3bt6lc7yass8w");
+        u25("00000000-0000-0000-0000-000000000000", "0");
+        u25("10000000-1000-1000-1000-100000000000", "y3mdbdz8auw3bt6lc7yass8w");
         u25("ffffffff-ffff-ffff-ffff-ffffffffffff", "f5lxx1zz5pnorynqglhzmsp33");
         u25("123e4567-e89b-12d3-a456-426614174000", "12vqjrnxk8whv3i8qi6qgrlz4");
-        u25("0e5ab0bf-bf70-4ab4-b9c7-689be859581a", "0ulcl9o7s5x5un8t2k4g4zkt6");
+        u25("0e5ab0bf-bf70-4ab4-b9c7-689be859581a", "ulcl9o7s5x5un8t2k4g4zkt6");
         u25("fd14a171-ebfc-492e-a6e7-9638b123d328", "ezdy2k5hz2lyj44f9w7rbsc2w");
-        Assertions.assertEquals("00notthelongestexample123", U25.fromString("NotTheLongestExample123").toString());
-        Assertions.assertEquals("3w5e11264sgsh", U25.hash().compact());
-        Assertions.assertEquals("3w5e11264sgtb", U25.hash((Object) null).compact());
-        Assertions.assertEquals("7sas223e907xn", U25.hash(0).compact());
-        Assertions.assertEquals("f5lxx1waqdrvu0ehr72ewiywb", U25.hash(0, 0).compact());
-        Assertions.assertEquals("f5lxx1waqdt0283gdg9r205lm", U25.hash(12, 13, 14).compact());
-        Assertions.assertEquals("7sas21lh64uyj", U25.hash("Some object").compact());
-        Assertions.assertEquals("2a3z97tr1xn2nw8tbd1", U25.hash("Some", null, 900).compact());
+        Assertions.assertEquals("notthelongestexample123", U25.fromString("NotTheLongestExample123").toString());
+        Assertions.assertEquals("3w5e11264sgsh", U25.hash().toString());
+        Assertions.assertEquals("3w5e11264sgtb", U25.hash((Object) null).toString());
+        Assertions.assertEquals("7sas223e907xn", U25.hash(0).toString());
+        Assertions.assertEquals("f5lxx1waqdrvu0ehr72ewiywb", U25.hash(0, 0).toString());
+        Assertions.assertEquals("f5lxx1waqdt0283gdg9r205lm", U25.hash(12, 13, 14).toString());
+        Assertions.assertEquals("7sas21lh64uyj", U25.hash("Some object").toString());
+        Assertions.assertEquals("2a3z97tr1xn2nw8tbd1", U25.hash("Some", null, 900).toString());
         Assertions.assertEquals("5ihhv3tmia5eqck4ru1qt32v9", U25.hash("A", "little", "longer", "array", "of", "objects",
-                1, 2, 3, 4, 5, 6, 7, 8, 9, 0.1, true, false, -222.333, U25.hash("not", "random")).compact());
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 0.1, true, false, -222.333, U25.hash("not", "random")).toString());
         Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("Longer than 25 but not a UUID"));
         Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("invalid!"));
     }
@@ -127,7 +127,7 @@ class CalcTest {
         Assertions.assertEquals(u25, U25.fromString(name25.toUpperCase()));
         Assertions.assertEquals(u25, U25.fromString(name));
         Assertions.assertEquals(u25, U25.fromString(name.toUpperCase()));
-        Assertions.assertEquals(u25, U25.fromString(u25.compact()));
+        Assertions.assertEquals(u25, U25.fromString(u25.toString()));
         Assertions.assertEquals(name, u25.uuid().toString());
         println(u25);
     }
