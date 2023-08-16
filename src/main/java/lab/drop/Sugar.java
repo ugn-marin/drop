@@ -614,6 +614,7 @@ public abstract class Sugar {
      * @return The resulting string.
      */
     public static String replace(String text, String... replacements) {
+        Objects.requireNonNull(text, "Text is null.");
         if (requireNoneNull(replacements).length % 2 != 0)
             throw new IllegalArgumentException("The replacements array length must be even.");
         for (int i = 0; i < replacements.length; i += 2) {
@@ -625,5 +626,15 @@ public abstract class Sugar {
                 text = text.replace(target, replacement);
         }
         return text;
+    }
+
+    /**
+     * Returns the last <code>length</code> characters of the text.
+     * @param text The text.
+     * @param length The length.
+     * @return The resulting string.
+     */
+    public static String tail(String text, int length) {
+        return Objects.requireNonNull(text, "Text is null.").substring(Math.max(0, text.length() - length));
     }
 }
