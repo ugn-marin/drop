@@ -107,6 +107,7 @@ class CalcTest {
         u25("0e5ab0bf-bf70-4ab4-b9c7-689be859581a", "ulcl9o7s5x5un8t2k4g4zkt6");
         u25("fd14a171-ebfc-492e-a6e7-9638b123d328", "ezdy2k5hz2lyj44f9w7rbsc2w");
         Assertions.assertEquals("notthelongestexample123", U25.fromString("NotTheLongestExample123").toString());
+        Assertions.assertEquals("0", U25.hash((Object[]) null).toString());
         Assertions.assertEquals("3w5e11264sgsh", U25.hash().toString());
         Assertions.assertEquals("3w5e11264sgtb", U25.hash((Object) null).toString());
         Assertions.assertEquals("7sas223e907xn", U25.hash(0).toString());
