@@ -100,31 +100,38 @@ class CalcTest {
 
     @Test
     void u25() {
-        u25("00000000-0000-0000-0000-000000000000", "0");
-        u25("10000000-1000-1000-1000-100000000000", "y3mdbdz8auw3bt6lc7yass8w");
-        u25("ffffffff-ffff-ffff-ffff-ffffffffffff", "f5lxx1zz5pnorynqglhzmsp33");
-        u25("123e4567-e89b-12d3-a456-426614174000", "12vqjrnxk8whv3i8qi6qgrlz4");
-        u25("0e5ab0bf-bf70-4ab4-b9c7-689be859581a", "ulcl9o7s5x5un8t2k4g4zkt6");
-        u25("fd14a171-ebfc-492e-a6e7-9638b123d328", "ezdy2k5hz2lyj44f9w7rbsc2w");
-        Assertions.assertEquals("notthelongestexample123", U25.fromString("NotTheLongestExample123").toString());
-        Assertions.assertEquals("0", U25.hash((Object[]) null).toString());
-        Assertions.assertEquals("3w5e11264sgsh", U25.hash().toString());
-        Assertions.assertEquals("3w5e11264sgtb", U25.hash((Object) null).toString());
-        Assertions.assertEquals("7sas223e907xn", U25.hash(0).toString());
-        Assertions.assertEquals("f5lxx1waqdrvu0ehr72ewiywb", U25.hash(0, 0).toString());
-        Assertions.assertEquals("f5lxx1waqdt0283gdg9r205lm", U25.hash(12, 13, 14).toString());
-        Assertions.assertEquals("7sas21lh64uyj", U25.hash("Some object").toString());
-        Assertions.assertEquals("2a3z97tr1xn2nw8tbd1", U25.hash("Some", null, 900).toString());
-        Assertions.assertEquals("5ihhv3tmia5eqck4ru1qt32v9", U25.hash("A", "little", "longer", "array", "of", "objects",
-                1, 2, 3, 4, 5, 6, 7, 8, 9, 0.1, true, false, -222.333, U25.hash("not", "random")).toString());
-        Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("Longer than 25 but not a UUID"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("invalid!"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("zzzzzzzzzzzzzzzzzzzzzzzzz"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("f5lxx1zz5pnorynqglhzmsp34"));
+        u25("00000000-0000-0000-0000-000000000000", "0", U25.hash((Object[]) null));
+        u25("10000000-1000-1000-1000-100000000000", "y3mdbdz8auw3bt6lc7yass8w", null);
+        u25("ffffffff-ffff-ffff-ffff-ffffffffffff", "f5lxx1zz5pnorynqglhzmsp33", null);
+        u25("123e4567-e89b-12d3-a456-426614174000", "12vqjrnxk8whv3i8qi6qgrlz4", null);
+        u25("0e5ab0bf-bf70-4ab4-b9c7-689be859581a", "ulcl9o7s5x5un8t2k4g4zkt6", null);
+        u25("fd14a171-ebfc-492e-a6e7-9638b123d328", "ezdy2k5hz2lyj44f9w7rbsc2w", null);
+        u25("00000000-0000-0000-0000-000000000001", "1", U25.fromString("1"));
+        u25("00000000-0000-0000-0000-000000000024", "10", U25.fromString("10"));
+        u25("00000000-0000-0000-0000-0000001b1d45", "12345", U25.fromString("12345"));
+        u25("004f0a98-ff57-8acc-6ec4-61f0228115db", "notthelongestexample123", U25.fromString("NotTheLongestExample123"));
+        u25("00000000-0000-0001-0000-000000000001", "3w5e11264sgsh", U25.hash());
+        u25("00000000-0000-0001-0000-00000000001f", "3w5e11264sgtb", U25.hash((Object) null));
+        u25("00000000-0000-0001-ffff-ffff8567792b", "7sas223e907xn", U25.hash(0));
+        u25("ffffffff-8567-792b-ffff-ffff8567792b", "f5lxx1waqdrvu0ehr72ewiywb", U25.hash(0, 0));
+        u25("ffffffff-8567-7a9f-ffff-fe334edb3a5a", "f5lxx1waqdt0283gdg9r205lm", U25.hash(12, 13, 14));
+        u25("00000000-0000-0001-ffff-ffff85382bea", "7sas223e75rze", U25.hash(-99999));
+        u25("00000000-0000-0001-ffff-fff6707eafbb", "7sas21lh64uyj", U25.hash("Some object"));
+        u25("00000000-4c03-f392-ffff-ffff856856c5", "2a3z97tr1xn2nw8tbd1", U25.hash("Some", null, 900));
+        u25("5d21302f-d1cc-b999-eef2-21f86b13a645", "5ihhv3tmia5eqck4ru1qt32v9", U25.hash("A", "little", "longer",
+                "array", "of", "objects", 1, 2, 3, 4, 5, 6, 7, 8, 9, 0.1, true, false, -222.333, U25.hash("not", "random")));
+        println(Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("Longer than 25 but not a UUID")));
+        println(Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("invalid!")));
+        println(Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("not valid")));
+        println(Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("non-valid")));
+        println(Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("zzzzzzzzzzzzzzzzzzzzzzzzz")));
+        println(Assertions.assertThrows(IllegalArgumentException.class, () -> U25.fromString("f5lxx1zz5pnorynqglhzmsp34")));
     }
 
-    private void u25(String name, String name25) {
+    private void u25(String name, String name25, U25 generated) {
         var u25 = new U25(UUID.fromString(name));
+        if (generated != null)
+            Assertions.assertEquals(u25, generated);
         Assertions.assertEquals(name25, u25.toString());
         Assertions.assertEquals(u25, U25.fromString(name25));
         Assertions.assertEquals(u25, U25.fromString(name25.toUpperCase()));
@@ -136,6 +143,13 @@ class CalcTest {
     }
 
     private void println(U25 u25) {
-        System.out.println(u25.uuid() + " : " + u25);
+        System.out.println(u25.uuid() + " : " + u25 + "  (" + u25.uuid().getMostSignificantBits() + ", " +
+                u25.uuid().getLeastSignificantBits() + ")");
+    }
+
+    private void println(IllegalArgumentException e) {
+        System.out.println(e.getMessage());
+        if (e.getCause() != null)
+            System.out.println("  " + e.getCause().getMessage());
     }
 }

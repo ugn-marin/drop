@@ -12,7 +12,8 @@ import java.util.UUID;
  * cases when a compact yet simple unique string identifier is needed, like a URL. For comparison, a base 64 encoded
  * representation of the UUID bytes takes 24 characters.<br>
  * The U25 is interchangeable with UUID, and the produced string is interchangeable with a U25 instance by using the
- * <code>fromString</code> method.
+ * <code>fromString</code> method.<br>
+ * For serialization either use <code>uuid</code> or <code>toString</code>, not the U25 object.
  */
 public class U25 {
     private final UUID uuid;
@@ -49,15 +50,8 @@ public class U25 {
                 throw new NumberFormatException("Value is out of range.");
             return u25;
         } catch (RuntimeException e) {
-            throw new IllegalArgumentException("Invalid U25 string: " + string + ".", e);
+            throw new IllegalArgumentException("Invalid U25 string: " + string, e);
         }
-    }
-
-    /**
-     * Returns the U25 instance from a randomly generated UUID.
-     */
-    public static U25 random() {
-        return new U25(UUID.randomUUID());
     }
 
     /**
