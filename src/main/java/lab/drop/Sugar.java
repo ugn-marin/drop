@@ -502,17 +502,29 @@ public abstract class Sugar {
     }
 
     /**
-     * Returns the object if instance of type.
+     * Returns the cast object if instance of type.
      * @param object An object.
      * @param type A class.
      * @param orElse The default return value if the object is not an instance of the type.
      * @param <T> The type to cast the object to, if is instance of the type. Must be assignable from <code>type</code>
      *           - not validated. Must be non-primitive.
-     * @return The object if instance of type, or the default.
+     * @return The cast object if instance of type, or the default.
      */
     public static <T> T as(Object object, Class<?> type, T orElse) {
         Objects.requireNonNull(type, "Type is null.");
         return type.isInstance(object) ? cast(object) : orElse;
+    }
+
+    /**
+     * Returns an Optional of the cast object if instance of type.
+     * @param object An object.
+     * @param type A class.
+     * @param <T> The type to cast the object to, if is instance of the type. Must be assignable from <code>type</code>
+     *           - not validated. Must be non-primitive.
+     * @return An Optional of the cast object if instance of type, or empty otherwise.
+     */
+    public static <T> Optional<T> as(Object object, Class<?> type) {
+        return Optional.ofNullable(as(object, type, null));
     }
 
     /**
