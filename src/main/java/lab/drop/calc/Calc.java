@@ -23,7 +23,7 @@ public abstract class Calc {
         if (objects == null)
             return 0;
         long result = 1;
-        for (Object object : objects) {
+        for (Object object : Sugar.flat(objects)) {
             result = 31 * result + (object == null ? 0 : object.hashCode());
             if (object != null)
                 result = 31 * result + object.getClass().getName().hashCode();
@@ -37,6 +37,7 @@ public abstract class Calc {
     public static UUID hash128(Object... objects) {
         if (objects == null)
             return new UUID(0, 0);
+        objects = Sugar.flat(objects);
         return new UUID(hash64(Arrays.copyOfRange(objects, 0, objects.length / 2)),
                 hash64(Arrays.copyOfRange(objects, objects.length / 2, objects.length)));
     }

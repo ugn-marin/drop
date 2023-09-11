@@ -14,7 +14,7 @@ public class CommandLineDemo {
 
         System.out.println(new JVM(Ping.class, "speedtest.net").attempt());
         System.out.println(new JVM(Ping.class, "unknownhost").attempt());
-        System.out.println(new JVM(Ping.class).attempt());
+        System.out.println(new JVM(Ping.class).attempt()); // Array is empty.
 
         System.out.println(new CommandLine("java", "-version").call());
 
