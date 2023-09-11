@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 /**
  * Utility methods for manually manipulating components' size and location in a layout-less parent.
  */
-public abstract class ManualLayout {
+public class ManualLayout {
 
     private ManualLayout() {}
 

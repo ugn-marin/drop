@@ -12,7 +12,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * Various calculation utilities.
  */
-public abstract class Calc {
+public class Calc {
 
     private Calc() {}
 

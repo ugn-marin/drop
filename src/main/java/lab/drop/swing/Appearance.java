@@ -9,7 +9,7 @@ import java.util.function.Function;
 /**
  * Various look and feel utilities.
  */
-public abstract class Appearance {
+public class Appearance {
 
     private Appearance() {}
 

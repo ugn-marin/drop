@@ -19,7 +19,7 @@ import java.util.stream.StreamSupport;
 /**
  * Various syntax sugar utilities.
  */
-public abstract class Sugar {
+public class Sugar {
 
     private Sugar() {}
 

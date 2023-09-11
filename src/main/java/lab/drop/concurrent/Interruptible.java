@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 /**
  * Utility methods and interfaces for handling interruptible flows, and wrapping interrupted exceptions if required.
  */
-public abstract class Interruptible {
+public class Interruptible {
 
     private Interruptible() {}
 

@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 /**
  * Units converters and utilities.
  */
-public abstract class Units {
+public class Units {
 
     private Units() {}
 
@@ -38,7 +38,7 @@ public abstract class Units {
     /**
      * Numeric values description tool.
      */
-    public static abstract class Numeric {
+    public static class Numeric {
 
         private enum NumericUnit implements Unit {
             numeric(1),
@@ -77,7 +77,7 @@ public abstract class Units {
     /**
      * Time units converters and utilities.
      */
-    public static abstract class Time {
+    public static class Time {
 
         enum TimeUnit implements Unit {
             milliseconds(1, 2000),
@@ -186,7 +186,7 @@ public abstract class Units {
     /**
      * Size units converters and utilities.
      */
-    public static abstract class Size {
+    public static class Size {
 
         enum SizeUnit implements Unit {
             bytes(1),

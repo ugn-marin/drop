@@ -5,7 +5,7 @@ import java.lang.management.ManagementFactory;
 /**
  * Common environment information.
  */
-public abstract class Environment {
+public class Environment {
 
     private Environment() {}
 

@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 /**
  * Various concurrency utilities.
  */
-public abstract class Concurrent {
+public class Concurrent {
     private static final Lazy<ExecutorService> cachedPool = new Lazy<>(() -> Executors.newCachedThreadPool(
             namedThreadFactory(Concurrent.class.getSimpleName(), true)));
 

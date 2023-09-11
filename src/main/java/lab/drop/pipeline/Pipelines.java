@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 /**
  * Utility methods for creating simple pipelines and pipeline workers.
  */
-public abstract class Pipelines {
+public class Pipelines {
 
     private Pipelines() {}
 
