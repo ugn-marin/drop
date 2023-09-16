@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  */
 public class Matrix<T> {
     private final List<List<T>> content;
-    private final MatrixPrinter printer = MatrixPrinter.basic();
+    private final MatrixStringifier stringifier = MatrixStringifier.basic();
 
     /**
      * Constructs an empty matrix.
@@ -621,7 +621,7 @@ public class Matrix<T> {
 
     @Override
     public String toString() {
-        return printer.apply(this);
+        return stringifier.apply(this);
     }
 
     /**

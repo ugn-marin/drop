@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 /**
  * A customizable matrix stringify function.
  */
-public class MatrixPrinter implements Function<Matrix<?>, String> {
+public class MatrixStringifier implements Function<Matrix<?>, String> {
     private final String columnsDelimiter;
     private final String rowsDelimiter;
     private final String nullDefault;
@@ -18,8 +18,8 @@ public class MatrixPrinter implements Function<Matrix<?>, String> {
     private final boolean hasHeaders;
     private final String[] headers;
 
-    private MatrixPrinter(String columnsDelimiter, String rowsDelimiter, String nullDefault, int cellLength,
-                          boolean hasHeaders, String... headers) {
+    private MatrixStringifier(String columnsDelimiter, String rowsDelimiter, String nullDefault, int cellLength,
+                              boolean hasHeaders, String... headers) {
         this.columnsDelimiter = Objects.requireNonNullElse(columnsDelimiter, " ");
         this.rowsDelimiter = Objects.requireNonNullElse(rowsDelimiter, "\n");
         this.nullDefault = Objects.requireNonNullElse(nullDefault, "");
@@ -29,60 +29,60 @@ public class MatrixPrinter implements Function<Matrix<?>, String> {
     }
 
     /**
-     * Creates a default printer of the matrix, equivalent to the <code>Matrix.toString()</code> method.
+     * Creates a default stringifier of the matrix, equivalent to the <code>Matrix.toString()</code> method.
      */
-    public static MatrixPrinter basic() {
-        return new MatrixPrinter(null, null, null, -1, false);
+    public static MatrixStringifier basic() {
+        return new MatrixStringifier(null, null, null, -1, false);
     }
 
     /**
-     * Creates a custom printer of the matrix, overriding the provided aspects of the prints.
+     * Creates a custom stringifier of the matrix, overriding the provided aspects of the prints.
      * @param columnsDelimiter The columns delimiter. If null, will use the default (space).
      * @param rowsDelimiter The rows delimiter. If null, will use the default (newline).
      * @param nullDefault The representation of null values. If null, will use the default (empty).
      * @param cellLength The cell length limit. Non-positive means no limit.
-     * @return The matrix printer.
+     * @return The matrix stringifier.
      */
-    public static MatrixPrinter custom(String columnsDelimiter, String rowsDelimiter, String nullDefault,
-                                       int cellLength) {
-        return new MatrixPrinter(columnsDelimiter, rowsDelimiter, nullDefault, cellLength, false);
+    public static MatrixStringifier custom(String columnsDelimiter, String rowsDelimiter, String nullDefault,
+                                           int cellLength) {
+        return new MatrixStringifier(columnsDelimiter, rowsDelimiter, nullDefault, cellLength, false);
     }
 
     /**
-     * Creates a table-like printer with optional headers.
+     * Creates a table-like stringifier with optional headers.
      * @param headers The headers to use. If a matrix has more columns than the provided headers, the headers will be
      *                printed on the first columns. If a matrix has fewer columns than the provided headers, the
      *                additional headers will be printed with null columns.
-     * @return The matrix printer.
+     * @return The matrix stringifier.
      */
-    public static MatrixPrinter table(String... headers) {
+    public static MatrixStringifier table(String... headers) {
         return table(null, -1, headers);
     }
 
     /**
-     * Creates a table-like printer with optional headers and cell length limit.
+     * Creates a table-like stringifier with optional headers and cell length limit.
      * @param cellLength The cell length limit. Applies to the headers as well. Non-positive means no limit.
      * @param headers The headers to use. If a matrix has more columns than the provided headers, the headers will be
      *                printed on the first columns. If a matrix has fewer columns than the provided headers, the
      *                additional headers will be printed with null columns.
-     * @return The matrix printer.
+     * @return The matrix stringifier.
      */
-    public static MatrixPrinter table(int cellLength, String... headers) {
+    public static MatrixStringifier table(int cellLength, String... headers) {
         return table(null, cellLength, headers);
     }
 
     /**
-     * Creates a table-like printer with optional headers and custom aspects of the prints.
+     * Creates a table-like stringifier with optional headers and custom aspects of the prints.
      * @param nullDefault The representation of null values. Applies to the headers as well. If null, will use the
      *                    default (empty).
      * @param cellLength The cell length limit. Applies to the headers as well. Non-positive means no limit.
      * @param headers The headers to use. If a matrix has more columns than the provided headers, the headers will be
-     *                printed on the first columns. If a matrix has fewer columns than the provided headers, the
+     *                stringified on the first columns. If a matrix has fewer columns than the provided headers, the
      *                additional headers will be printed with null columns.
-     * @return The matrix printer.
+     * @return The matrix stringifier.
      */
-    public static MatrixPrinter table(String nullDefault, int cellLength, String... headers) {
-        return new MatrixPrinter(" | ", null, nullDefault, cellLength, true, headers);
+    public static MatrixStringifier table(String nullDefault, int cellLength, String... headers) {
+        return new MatrixStringifier(" | ", null, nullDefault, cellLength, true, headers);
     }
 
     @Override

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 class MatrixTest {
-    private final MatrixPrinter printer = MatrixPrinter.custom(",", "|", "null", -1);
+    private final MatrixStringifier stringifier = MatrixStringifier.custom(",", "|", "null", -1);
 
     @BeforeEach
     void beforeEach(TestInfo testInfo) {
@@ -20,7 +20,7 @@ class MatrixTest {
 
     private void assertData(String expected, Matrix<?> matrix) {
         System.out.println(matrix);
-        Assertions.assertEquals(expected, printer.apply(matrix));
+        Assertions.assertEquals(expected, stringifier.apply(matrix));
         var columns = matrix.getColumns();
         if (!columns.isEmpty()) {
             int rows = matrix.size().getY();
@@ -66,7 +66,7 @@ class MatrixTest {
         Assertions.assertTrue(matrix.isEmpty());
         Assertions.assertTrue(matrix.size().equals(0, 0));
         assertData("", matrix);
-        Assertions.assertEquals("", MatrixPrinter.table().apply(matrix));
+        Assertions.assertEquals("", MatrixStringifier.table().apply(matrix));
         Assertions.assertTrue(matrix.getRows().isEmpty());
         Assertions.assertTrue(matrix.getColumns().isEmpty());
     }
@@ -75,7 +75,7 @@ class MatrixTest {
     void header() {
         Assertions.assertEquals("""
                 Just a header
-                -------------""", MatrixPrinter.table("Just a header").apply(new Matrix<>()));
+                -------------""", MatrixStringifier.table("Just a header").apply(new Matrix<>()));
     }
 
     @Test
@@ -85,7 +85,7 @@ class MatrixTest {
         Assertions.assertEquals("""
                 Just a header |
                 --------------|--
-                1             | 2""", MatrixPrinter.table("Just a header").apply(matrix));
+                1             | 2""", MatrixStringifier.table("Just a header").apply(matrix));
     }
 
     @Test
@@ -95,7 +95,7 @@ class MatrixTest {
         Assertions.assertEquals("""
                 Just a header | Nil
                 --------------|----
-                1             | 2""", MatrixPrinter.table("Nil", 0, "Just a header").apply(matrix));
+                1             | 2""", MatrixStringifier.table("Nil", 0, "Just a header").apply(matrix));
     }
 
     @Test
@@ -105,14 +105,14 @@ class MatrixTest {
         Assertions.assertEquals("""
                 Just a header | 2
                 --------------|--
-                1             |""", MatrixPrinter.table("Just a header", "2").apply(matrix));
+                1             |""", MatrixStringifier.table("Just a header", "2").apply(matrix));
     }
 
     @Test
     void header7() {
         Assertions.assertEquals("""
                 Just...
-                -------""", MatrixPrinter.table(7, "Just a header").apply(new Matrix<>()));
+                -------""", MatrixStringifier.table(7, "Just a header").apply(new Matrix<>()));
     }
 
     @Test
@@ -1498,7 +1498,7 @@ class MatrixTest {
                 here  |            |
                 1     |            |
                 2     | 2          |
-                      | 3          |""", MatrixPrinter.table("#1", "Header\n2", "Third").apply(matrix));
+                      | 3          |""", MatrixStringifier.table("#1", "Header\n2", "Third").apply(matrix));
     }
 
     @Test
@@ -1518,7 +1518,7 @@ class MatrixTest {
                 here  |       |
                 1     |       | N/A
                 2     | 2     |
-                      | 3     |""", MatrixPrinter.table("N/A", 5, "#1", "Header\n2", "Third").apply(matrix));
+                      | 3     |""", MatrixStringifier.table("N/A", 5, "#1", "Header\n2", "Third").apply(matrix));
     }
 
     @Test
