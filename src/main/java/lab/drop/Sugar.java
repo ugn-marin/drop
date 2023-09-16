@@ -559,10 +559,10 @@ public class Sugar {
     }
 
     /**
-     * Returns the boolean value. To be used as an identity {@link java.util.function.Predicate}.
+     * Returns the Boolean value. To be used as an identity {@link java.util.function.Predicate}.
      */
-    public static boolean is(boolean value) {
-        return value;
+    public static boolean is(Boolean value) {
+        return value != null && value;
     }
 
     /**

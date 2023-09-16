@@ -57,4 +57,18 @@ public class Environment {
     public static boolean isWindows() {
         return os().startsWith("Windows");
     }
+
+    /**
+     * Returns true if current operating system is Linux.
+     */
+    public static boolean isLinux() {
+        return os().startsWith("Linux");
+    }
+
+    /**
+     * Returns true if current operating system is Mac OS.
+     */
+    public static boolean isMac() {
+        return os().startsWith("Mac");
+    }
 }
