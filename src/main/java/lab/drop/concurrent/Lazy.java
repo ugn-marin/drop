@@ -53,6 +53,17 @@ public class Lazy<T> implements Supplier<T> {
     }
 
     /**
+     * Returns a lazy supplier of the result of applying the given function to the element of this lazy supplier.
+     * @param function The function to apply.
+     * @param <O> The output type.
+     * @return The new lazy supplier.
+     */
+    public <O> Lazy<O> map(Function<T, O> function) {
+        Objects.requireNonNull(function, "Function is null.");
+        return new Lazy<>(() -> function.apply(get()));
+    }
+
+    /**
      * Performs an operation on the value if and only if calculated.
      * @param consumer The value consumer.
      */

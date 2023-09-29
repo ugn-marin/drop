@@ -14,6 +14,7 @@ import lab.drop.pipeline.monitoring.PipelineWorkerMonitoring;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
  * a supply pipe (open pipeline) and go through a number of functions and transformers. Ends with one or more consumers.
  * @param <S> The type of drops supplied at the start of the pipeline.
  */
-public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S> {
+public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, Supplier<Unsafe<Void>> {
     private final List<PipelineWorker> pipelineWorkers;
     private final List<PipelineWorker> externalWorkers;
     private final SupplyPipe<S> supplyPipe;
@@ -144,6 +145,7 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S> {
      * toMonadicRunnable().get()
      * </pre>
      */
+    @Override
     public Unsafe<Void> get() {
         return toMonadicRunnable().get();
     }
