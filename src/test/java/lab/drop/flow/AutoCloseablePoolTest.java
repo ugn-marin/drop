@@ -1,7 +1,7 @@
 package lab.drop.flow;
 
-import lab.drop.Sugar;
 import lab.drop.concurrent.LazyAutoCloseable;
+import lab.drop.data.Data;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +22,7 @@ class AutoCloseablePoolTest {
 
     @Test
     void initialSize() throws Exception {
-        var additionalResources = Sugar.fill(10, Resource::new);
+        var additionalResources = Data.fill(10, Resource::new);
         AutoCloseablePool<Resource> pool;
         try (var lazyPool = new LazyAutoCloseable<>(() -> new AutoCloseablePool<>(Resource::new, 5))) {
             pool = lazyPool.get();

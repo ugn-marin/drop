@@ -1,8 +1,9 @@
 package lab.drop.concurrent;
 
-import lab.drop.Sugar;
-import lab.drop.function.Reducer;
-import lab.drop.function.UnsafeRunnable;
+import lab.drop.data.Data;
+import lab.drop.flow.Flow;
+import lab.drop.functional.Reducer;
+import lab.drop.functional.UnsafeRunnable;
 
 import java.util.Objects;
 import java.util.Set;
@@ -64,7 +65,7 @@ public class Concurrent {
      * @param tasks The tasks.
      */
     public static void run(Reducer<Exception> exceptionsReducer, UnsafeRunnable... tasks) throws Exception {
-        getAll(exceptionsReducer, Stream.of(Sugar.requireFull(tasks)).map(Concurrent::run).toArray(Future[]::new));
+        getAll(exceptionsReducer, Stream.of(Data.requireFull(tasks)).map(Concurrent::run).toArray(Future[]::new));
     }
 
     /**
@@ -73,7 +74,7 @@ public class Concurrent {
      * @param futures The futures.
      */
     public static void getAll(Reducer<Exception> exceptionsReducer, Future<?>... futures) throws Exception {
-        Sugar.runSteps(Stream.of(Sugar.requireFull(futures)).map(future -> (UnsafeRunnable) future::get).iterator(),
+        Flow.runSteps(Stream.of(Data.requireFull(futures)).map(future -> (UnsafeRunnable) future::get).iterator(),
                 exceptionsReducer);
     }
 

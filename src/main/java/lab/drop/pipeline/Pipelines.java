@@ -1,9 +1,9 @@
 package lab.drop.pipeline;
 
-import lab.drop.function.ConditionalConsumer;
-import lab.drop.function.UnsafeConsumer;
-import lab.drop.function.UnsafeFunction;
-import lab.drop.function.UnsafeSupplier;
+import lab.drop.functional.ConditionalConsumer;
+import lab.drop.functional.UnsafeConsumer;
+import lab.drop.functional.UnsafeFunction;
+import lab.drop.functional.UnsafeSupplier;
 
 import java.util.Collection;
 import java.util.Map;

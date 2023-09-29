@@ -1,6 +1,6 @@
-package lab.drop.function;
+package lab.drop.functional;
 
-import lab.drop.Sugar;
+import lab.drop.flow.Flow;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -74,7 +74,7 @@ public interface Monad<T> {
      * is a wrapping of a failure result.
      */
     default T unwrap() throws Exception {
-        Sugar.throwIfNonNull(exception());
+        Flow.throwIfNonNull(exception());
         return value();
     }
 }

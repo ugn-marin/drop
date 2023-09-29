@@ -1,12 +1,14 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
 import lab.drop.concurrent.*;
+import lab.drop.data.Data;
+import lab.drop.flow.Flow;
 import lab.drop.flow.OneShot;
 import lab.drop.flow.Retry;
 import lab.drop.flow.UtilizationCounter;
-import lab.drop.function.UnsafeRunnable;
-import lab.drop.function.UnsafeSupplier;
+import lab.drop.functional.Functional;
+import lab.drop.functional.UnsafeRunnable;
+import lab.drop.functional.UnsafeSupplier;
 import lab.drop.pipeline.monitoring.PipelineWorkerMonitoring;
 import lab.drop.pipeline.monitoring.PipelineWorkerState;
 
@@ -42,7 +44,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
 
     PipelineWorker(boolean internal, int concurrency) {
         this.internal = internal;
-        this.concurrency = Sugar.requireRange(concurrency, internal ? null : 1, null);
+        this.concurrency = Data.requireRange(concurrency, internal ? null : 1, null);
         simpleName = new Lazy<>(() -> {
             Class<?> clazz = getClass();
             String simpleName = clazz.getSimpleName();
@@ -117,8 +119,8 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
         oneShot.check("The pipeline worker instance cannot be reused.");
         state = PipelineWorkerState.Running;
         var optionalUtilizationCounter = Optional.ofNullable(utilizationCounter);
-        Sugar.runSteps(Stream.of(() -> optionalUtilizationCounter.ifPresent(UtilizationCounter::start),
-                        Sugar.merge(this::work, () -> Sugar.maybe(executorService, Concurrent::join)),
+        Flow.runSteps(Stream.of(() -> optionalUtilizationCounter.ifPresent(UtilizationCounter::start),
+                        Functional.merge(this::work, () -> Flow.maybe(executorService, Concurrent::join)),
                         () -> state = throwable != null ? PipelineWorkerState.Aborting : PipelineWorkerState.Closing,
                         this::close, this::internalClose,
                         () -> optionalUtilizationCounter.ifPresent(UtilizationCounter::stop),
@@ -127,7 +129,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
         state = throwable != null ? PipelineWorkerState.Aborted : PipelineWorkerState.Done;
         latch.release();
         if (!(throwable instanceof SilentStop))
-            Sugar.throwIfNonNull(throwable);
+            Flow.throwIfNonNull(throwable);
     }
 
     /**
@@ -147,7 +149,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
      */
     void submit(UnsafeRunnable work) {
         cancelableSubmitter.get().submit(() -> {
-            Sugar.throwIfNonNull(throwable);
+            Flow.throwIfNonNull(throwable);
             try {
                 return retryBuilder != null ? retryBuilder.build(work).call() : work.toVoidCallable().call();
             } catch (Throwable t) {

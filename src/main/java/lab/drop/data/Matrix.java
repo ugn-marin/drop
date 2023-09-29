@@ -1,6 +1,6 @@
 package lab.drop.data;
 
-import lab.drop.Sugar;
+import lab.drop.flow.Flow;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -42,7 +42,7 @@ public class Matrix<T> {
     public Matrix(int x, int y) {
         if (validateNegative(x) * validateNegative(y) == 0 && x != y)
             throw new IndexOutOfBoundsException("The matrix size can't be zero in one dimension.");
-        content = Sugar.fill(x, () -> Sugar.fill(y));
+        content = Data.fill(x, () -> Data.fill(y));
     }
 
     /**
@@ -75,7 +75,7 @@ public class Matrix<T> {
      * Returns an unmodifiable copy of the matrix.
      */
     public static <T> Matrix<T> unmodifiableCopy(Matrix<T> matrix) {
-        return new Matrix<>(matrix.content.stream().map(Sugar::unmodifiableCopy).toList());
+        return new Matrix<>(matrix.content.stream().map(Data::unmodifiableCopy).toList());
     }
 
     /**
@@ -106,7 +106,7 @@ public class Matrix<T> {
      * Returns the number of rows in the matrix.
      */
     public int rows() {
-        return isEmpty() ? 0 : Sugar.first(content).size();
+        return isEmpty() ? 0 : Data.first(content).size();
     }
 
     /**
@@ -187,7 +187,7 @@ public class Matrix<T> {
      * @throws IndexOutOfBoundsException If the index is out of bounds.
      */
     public List<T> getColumn(int x) {
-        return Sugar.unmodifiableCopy(content.get(x));
+        return Data.unmodifiableCopy(content.get(x));
     }
 
     /**
@@ -250,7 +250,7 @@ public class Matrix<T> {
      * Returns the matrix cells as an ordered, unmodifiable list of columns.
      */
     public List<List<T>> getColumns() {
-        return content.stream().map(Sugar::unmodifiableCopy).toList();
+        return content.stream().map(Data::unmodifiableCopy).toList();
     }
 
     /**
@@ -311,8 +311,8 @@ public class Matrix<T> {
             throw new IndexOutOfBoundsException("Row " + y + " can't be added having a total of " + rows() + ".");
         boolean wasEmpty = isEmpty();
         if (wasEmpty)
-            content.add(Sugar.fill(1));
-        Sugar.iterate(Math.max(row.length - columns(), 0), i -> addColumn());
+            content.add(Data.fill(1));
+        Flow.iterate(Math.max(row.length - columns(), 0), i -> addColumn());
         getColumnsRange().forEach(x -> content.get(x).add(y, x < row.length ? row[x] : null));
         if (wasEmpty)
             removeRow(y + 1);
@@ -364,8 +364,8 @@ public class Matrix<T> {
             throw new IndexOutOfBoundsException("Column " + x + " can't be added having a total of " + columns() +
                     ".");
         boolean wasEmpty = isEmpty();
-        Sugar.iterate(Math.max(column.length - rows(), 0), i -> addRow());
-        List<T> columnContent = Sugar.fill(Math.max(rows(), 1));
+        Flow.iterate(Math.max(column.length - rows(), 0), i -> addRow());
+        List<T> columnContent = Data.fill(Math.max(rows(), 1));
         for (int y = 0; y < rows() && y < column.length; y++)
             columnContent.set(y, column[y]);
         content.add(x, columnContent);
@@ -464,7 +464,7 @@ public class Matrix<T> {
     public final List<T> setRow(int y, T... row) {
         var previous = removeRow(y);
         addRowBefore(y, row);
-        Sugar.iterate(Math.max(previous.size() - columns(), 0), i -> addColumn());
+        Flow.iterate(Math.max(previous.size() - columns(), 0), i -> addColumn());
         return previous;
     }
 
@@ -481,7 +481,7 @@ public class Matrix<T> {
     public final List<T> setColumn(int x, T... column) {
         var previous = removeColumn(x);
         addColumnBefore(x, column);
-        Sugar.iterate(Math.max(previous.size() - rows(), 0), i -> addRow());
+        Flow.iterate(Math.max(previous.size() - rows(), 0), i -> addRow());
         return previous;
     }
 

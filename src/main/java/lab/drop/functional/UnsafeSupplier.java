@@ -1,6 +1,4 @@
-package lab.drop.function;
-
-import lab.drop.Sugar;
+package lab.drop.functional;
 
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
@@ -18,14 +16,14 @@ public interface UnsafeSupplier<O> {
      * Wraps this supplier implementation in a Supplier throwing sneaky.
      */
     default Supplier<O> toSneakySupplier() {
-        return Sugar.toSneakySupplier(toCallable());
+        return Functional.toSneakySupplier(toCallable());
     }
 
     /**
      * Wraps this supplier implementation in a Supplier returning a monadic wrapper of the result.
      */
     default Supplier<Unsafe<O>> toMonadicSupplier() {
-        return Sugar.toMonadicSupplier(toCallable());
+        return Functional.toMonadicSupplier(toCallable());
     }
 
     /**

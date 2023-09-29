@@ -1,7 +1,8 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
-import lab.drop.function.UnsafeConsumer;
+import lab.drop.data.Data;
+import lab.drop.flow.Flow;
+import lab.drop.functional.UnsafeConsumer;
 import lab.drop.pipeline.monitoring.PipeMonitoring;
 
 import java.util.HashMap;
@@ -39,7 +40,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
      * @param name The name of the pipe.
      */
     protected Pipe(int baseCapacity, String name) {
-        this.baseCapacity = Sugar.requirePositive(baseCapacity);
+        this.baseCapacity = Data.requirePositive(baseCapacity);
         this.name = name;
         inOrderQueue = new ArrayBlockingQueue<>(baseCapacity, true);
         outOfOrderDrops = new HashMap<>();
@@ -95,7 +96,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
     private void pushDrop(Drop<D> drop) throws Exception {
         if (drop == null)
             return;
-        Sugar.throwIfNonNull(endOfInput);
+        Flow.throwIfNonNull(endOfInput);
         while (true) {
             lock.lockInterruptibly();
             try {
@@ -158,7 +159,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
     }
 
     void drain(UnsafeConsumer<Drop<D>> action) throws Exception {
-        Sugar.acceptWhile(this::take, action, Objects::nonNull);
+        Flow.acceptWhile(this::take, action, Objects::nonNull);
     }
 
     void clear() throws InterruptedException {

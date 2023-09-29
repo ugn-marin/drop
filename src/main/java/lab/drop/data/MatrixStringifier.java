@@ -120,7 +120,7 @@ public class MatrixStringifier implements Function<Matrix<?>, String> {
         var lines = new ArrayList<>((newlines ? string.lines() : Stream.of(string)).map(this::applyLength).toList());
         if (newlines)
             maxLength[x] = Math.max(maxLength[x], lines.stream().mapToInt(String::length).max().orElse(0));
-        strings.set(x, y, lines.isEmpty() ? string : Sugar.removeFirst(lines));
+        strings.set(x, y, lines.isEmpty() ? string : Data.removeFirst(lines));
         additionalLines.set(x, y, lines);
     }
 

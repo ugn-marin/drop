@@ -1,6 +1,6 @@
 package lab.drop.pipeline;
 
-import lab.drop.function.UnsafeFunction;
+import lab.drop.functional.UnsafeFunction;
 
 import java.util.Objects;
 

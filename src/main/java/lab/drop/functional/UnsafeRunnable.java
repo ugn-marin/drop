@@ -1,4 +1,4 @@
-package lab.drop.function;
+package lab.drop.functional;
 
 import lab.drop.Sugar;
 
@@ -39,7 +39,7 @@ public interface UnsafeRunnable {
      * Wraps this runnable implementation in a Supplier returning a monadic wrapper of the result.
      */
     default Supplier<Unsafe<Void>> toMonadicRunnable() {
-        return Sugar.toMonadicSupplier(toVoidCallable());
+        return Functional.toMonadicSupplier(toVoidCallable());
     }
 
     /**

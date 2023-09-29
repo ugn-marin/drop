@@ -1,7 +1,7 @@
 package lab.drop.swing;
 
 import lab.drop.concurrent.Concurrent;
-import lab.drop.function.Reducer;
+import lab.drop.functional.Reducer;
 import lab.drop.runtime.JVM;
 
 public class SwingDemoJVM {

@@ -1,6 +1,6 @@
 package lab.drop.flow;
 
-import lab.drop.function.UnsafeSupplier;
+import lab.drop.functional.UnsafeSupplier;
 
 /**
  * A simple object pool of auto-closeable objects.

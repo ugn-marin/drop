@@ -1,6 +1,7 @@
 package lab.drop.calc;
 
 import lab.drop.Sugar;
+import lab.drop.data.Data;
 
 import java.util.stream.Stream;
 
@@ -21,7 +22,7 @@ public class Units {
 
         default String describe(double value, Unit[] units) {
             return Stream.of(units).filter(unit -> Math.abs(value) <= unit.getLimit()).findFirst()
-                    .orElse(Sugar.last(units)).describe(value, Sugar.first(units));
+                    .orElse(Data.last(units)).describe(value, Data.first(units));
         }
 
         private String describe(double value, Unit smallestUnit) {

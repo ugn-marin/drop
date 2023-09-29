@@ -1,4 +1,4 @@
-package lab.drop.function;
+package lab.drop.functional;
 
 import java.util.Objects;
 import java.util.function.Function;

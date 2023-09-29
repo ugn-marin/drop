@@ -1,6 +1,7 @@
 package lab.drop.swing;
 
-import lab.drop.Sugar;
+import lab.drop.data.Data;
+import lab.drop.functional.Functional;
 
 import javax.swing.*;
 import java.awt.*;
@@ -103,7 +104,7 @@ public class Appearance {
     public static void setNimbus(Color base, Color focus, Color foreground, Color background) {
         for (var info : UIManager.getInstalledLookAndFeels()) {
             if ("Nimbus".equals(info.getName())) {
-                Sugar.sneaky(() -> UIManager.setLookAndFeel(info.getClassName()));
+                Functional.sneaky(() -> UIManager.setLookAndFeel(info.getClassName()));
                 if (base != null) {
                     UIManager.put("nimbusBase", base);
                     UIManager.put("nimbusBlueGrey", mix(base.brighter(), Color.lightGray, 0.45D));
@@ -141,7 +142,7 @@ public class Appearance {
      * Constructs an equal mix color of the provided colors.
      */
     public static Color mix(Color... colors) {
-        var color = Sugar.first(colors);
+        var color = Data.first(colors);
         for (int i = 1; i < colors.length; i++)
             color = mix(color, colors[i], 1D / (i + 1));
         return color;

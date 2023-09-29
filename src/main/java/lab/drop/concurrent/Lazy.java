@@ -1,6 +1,6 @@
 package lab.drop.concurrent;
 
-import lab.drop.Sugar;
+import lab.drop.flow.Flow;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -31,7 +31,7 @@ public class Lazy<T> implements Supplier<T> {
      * @param onException A function returning a value if the callable throws an exception.
      */
     public Lazy(Callable<T> callable, Function<Exception, T> onException) {
-        this(Sugar.orElse(callable, onException));
+        this(Flow.orElse(callable, onException));
     }
 
     /**

@@ -2,8 +2,9 @@ package lab.drop.flow;
 
 import lab.drop.Sugar;
 import lab.drop.concurrent.Interruptible;
-import lab.drop.function.Reducer;
-import lab.drop.function.UnsafeRunnable;
+import lab.drop.data.Data;
+import lab.drop.functional.Reducer;
+import lab.drop.functional.UnsafeRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,7 @@ public final class Retry<O> implements Callable<O> {
                 exceptions.add(e);
             }
         }
-        Sugar.throwIfNonNull(exceptionsReducer.apply(exceptions));
+        Flow.throwIfNonNull(exceptionsReducer.apply(exceptions));
         return null;
     }
 
@@ -87,7 +88,7 @@ public final class Retry<O> implements Callable<O> {
         private Reducer<Exception> exceptionsReducer = Reducer.suppressor();
 
         private Builder(int tries) {
-            this.tries = Sugar.requirePositive(tries);
+            this.tries = Data.requirePositive(tries);
         }
 
         /**

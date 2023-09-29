@@ -1,6 +1,6 @@
 package lab.drop.runtime;
 
-import lab.drop.Sugar;
+import lab.drop.data.Data;
 
 public class CommandLineDemo {
 
@@ -8,7 +8,7 @@ public class CommandLineDemo {
         var hostnameCommand = new CommandLine("hostname");
         hostnameCommand.setNoPrints();
         var hostname = hostnameCommand.call();
-        System.out.printf("%s, %s%n", Sugar.first(hostname.getOutput()), hostname);
+        System.out.printf("%s, %s%n", Data.first(hostname.getOutput()), hostname);
 
         System.out.println(new Ping("google.com").call());
 
@@ -24,7 +24,7 @@ public class CommandLineDemo {
     private static class Ping extends CommandLine {
 
         public static void main(String[] args) throws Exception {
-            System.exit(new Ping(Sugar.first(args)).call().getExitStatus());
+            System.exit(new Ping(Data.first(args)).call().getExitStatus());
         }
 
         Ping(String host) {

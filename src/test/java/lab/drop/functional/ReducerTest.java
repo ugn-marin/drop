@@ -1,4 +1,4 @@
-package lab.drop.function;
+package lab.drop.functional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

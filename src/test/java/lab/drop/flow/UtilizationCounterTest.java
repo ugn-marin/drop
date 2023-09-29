@@ -1,7 +1,7 @@
 package lab.drop.flow;
 
 import lab.drop.concurrent.Concurrent;
-import lab.drop.function.Reducer;
+import lab.drop.functional.Reducer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

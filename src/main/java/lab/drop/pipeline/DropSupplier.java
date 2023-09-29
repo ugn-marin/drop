@@ -1,7 +1,7 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
-import lab.drop.function.UnsafeSupplier;
+import lab.drop.flow.Flow;
+import lab.drop.functional.UnsafeSupplier;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -44,7 +44,7 @@ public abstract class DropSupplier<O> extends PipelineWorker implements UnsafeSu
 
     @Override
     void work() {
-        Sugar.iterate(getConcurrency(), i -> submit(() -> Sugar.acceptWhilePresent(() -> busyGet(this), this::push)));
+        Flow.iterate(getConcurrency(), i -> submit(() -> Flow.acceptWhilePresent(() -> busyGet(this), this::push)));
     }
 
     /**

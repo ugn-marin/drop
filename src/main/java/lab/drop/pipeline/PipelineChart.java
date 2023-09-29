@@ -4,6 +4,8 @@ import lab.drop.Sugar;
 import lab.drop.concurrent.LazyRunnable;
 import lab.drop.data.Matrix;
 import lab.drop.data.Range;
+import lab.drop.flow.Flow;
+import lab.drop.functional.Functional;
 import lab.drop.pipeline.monitoring.PipelineComponentMonitoring;
 
 import java.util.*;
@@ -26,9 +28,10 @@ class PipelineChart {
         this.pipelineWorkers = pipelineWorkers;
         this.supplyPipe = supplyPipe;
         classifyComponents();
-        var inputPipes = Sugar.union(inputConsumers.keySet().stream(), joins.stream().map(Join::getInputs)
+        var inputPipes = Functional.union(inputConsumers.keySet().stream(), joins.stream().map(Join::getInputs)
                 .flatMap(Stream::of)).collect(Collectors.toSet());
-        if (Sugar.union(outputSuppliers.keySet().stream(), forks.stream().map(Fork::getOutputs).flatMap(Stream::of),
+        if (Functional.union(outputSuppliers.keySet().stream(),
+                forks.stream().map(Fork::getOutputs).flatMap(Stream::of),
                 Stream.of(supplyPipe)).anyMatch(Predicate.not(inputPipes::contains)))
             warnings.add(PipelineWarning.COMPLETENESS);
         var suppliers = outputSuppliers.get(supplyPipe);
@@ -115,7 +118,7 @@ class PipelineChart {
     }
 
     private void addPipeWorkers(int x, int y, List<InputWorker<?>> workers, Runnable addColumn) {
-        Sugar.iterate(workers.size() - 1, i -> matrix.addRowAfter(y));
+        Flow.iterate(workers.size() - 1, i -> matrix.addRowAfter(y));
         addColumn.run();
         int nextY = y;
         for (var worker : workers) {
@@ -141,7 +144,7 @@ class PipelineChart {
 
     private void addForkOutputs(int x, int y, Fork<?> fork, Runnable addColumn) {
         var outputs = new ArrayList<>(List.of(fork.getOutputs()));
-        Sugar.iterate(outputs.size() - 1, i -> matrix.addRowAfter(y));
+        Flow.iterate(outputs.size() - 1, i -> matrix.addRowAfter(y));
         addColumn.run();
         outputs.sort(Comparator.comparing(Objects::toString));
         int nextY = y;

@@ -3,8 +3,10 @@ package lab.drop.runtime;
 import lab.drop.Sugar;
 import lab.drop.calc.Units;
 import lab.drop.concurrent.Concurrent;
-import lab.drop.function.Reducer;
-import lab.drop.function.UnsafeRunnable;
+import lab.drop.data.Data;
+import lab.drop.flow.Flow;
+import lab.drop.functional.Reducer;
+import lab.drop.functional.UnsafeRunnable;
 
 import java.io.*;
 import java.util.*;
@@ -77,7 +79,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
         @Override
         public String toString() {
-            return String.format("%s returned %d in %s", Sugar.first(processBuilder.command()), exitStatus,
+            return String.format("%s returned %d in %s", Data.first(processBuilder.command()), exitStatus,
                     Units.Time.describeNano(nanoTimeTook));
         }
     }
@@ -225,14 +227,14 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @return True if result is successful, else false.
      */
     public boolean attempt() {
-        return Sugar.success(this, CommandLineResult::isSuccessful).get();
+        return Flow.success(this, CommandLineResult::isSuccessful).get();
     }
 
     private UnsafeRunnable getOutputReader(boolean isError, CommandLineResult result) {
         return () -> {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(isError ? process.getErrorStream() :
                     process.getInputStream()))) {
-                Sugar.forEach(br.lines(), line -> result.addOutput(new CommandLineOutputLine(line, isError)));
+                Flow.forEach(br.lines(), line -> result.addOutput(new CommandLineOutputLine(line, isError)));
             } catch (IOException e) {
                 result.addOutput(new CommandLineOutputLine(e.toString(), true));
             }

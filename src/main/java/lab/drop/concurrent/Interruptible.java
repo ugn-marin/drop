@@ -1,10 +1,10 @@
 package lab.drop.concurrent;
 
 import lab.drop.Sugar;
-import lab.drop.function.UnsafeConsumer;
-import lab.drop.function.UnsafeFunction;
-import lab.drop.function.UnsafeRunnable;
-import lab.drop.function.UnsafeSupplier;
+import lab.drop.functional.UnsafeConsumer;
+import lab.drop.functional.UnsafeFunction;
+import lab.drop.functional.UnsafeRunnable;
+import lab.drop.functional.UnsafeSupplier;
 
 import javax.naming.InterruptedNamingException;
 import java.io.InterruptedIOException;

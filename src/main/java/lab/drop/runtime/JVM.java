@@ -1,6 +1,7 @@
 package lab.drop.runtime;
 
 import lab.drop.Sugar;
+import lab.drop.data.Data;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -30,7 +31,7 @@ public class JVM extends CommandLine {
      * @param args Optional main arguments. Only non-null elements are used.
      */
     public JVM(boolean collectOutput, List<String> jvmParameters, Class<?> mainClass, Object... args) {
-        super(collectOutput, Sugar.flat(executable, jvmParameters, "-cp", classpath, mainClass.getName(),
+        super(collectOutput, Data.flat(executable, jvmParameters, "-cp", classpath, mainClass.getName(),
                 Sugar.toStrings(args)));
     }
 }

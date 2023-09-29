@@ -1,12 +1,14 @@
 package lab.drop.pipeline;
 
 import lab.drop.Sugar;
+import lab.drop.data.Data;
 import lab.drop.data.Matrix;
+import lab.drop.flow.Flow;
 import lab.drop.flow.OneShot;
 import lab.drop.flow.Retry;
-import lab.drop.function.Converter;
-import lab.drop.function.Reducer;
-import lab.drop.function.Unsafe;
+import lab.drop.functional.Converter;
+import lab.drop.functional.Reducer;
+import lab.drop.functional.Unsafe;
 import lab.drop.pipeline.monitoring.PipeMonitoring;
 import lab.drop.pipeline.monitoring.PipelineComponentMonitoring;
 import lab.drop.pipeline.monitoring.PipelineWorkerMonitoring;
@@ -155,7 +157,7 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
         if (isOpen)
             setEndOfInput();
         pipelineWorkers.forEach(pipelineWorker -> pipelineWorker.cancel(getThrowable()));
-        Sugar.forEach(Stream.concat(Sugar.instancesOf(pipelineWorkers, InputWorker.class).stream(),
+        Flow.forEach(Stream.concat(Sugar.instancesOf(pipelineWorkers, InputWorker.class).stream(),
                 Sugar.instancesOf(pipelineWorkers, OutputWorker.class).stream()).map(new Converter<Object, Pipe<?>>()
                 .put(InputWorker.class, InputWorker::getInput).put(OutputWorker.class, OutputWorker::getOutput)
                 .orElseThrow()), Pipe::clear);
@@ -235,7 +237,7 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
 
         @SafeVarargs
         private Builder(DropSupplier<S>... dropSuppliers) {
-            var supplyPipes = Stream.of(Sugar.requireFull(dropSuppliers)).map(DropSupplier::getOutput)
+            var supplyPipes = Stream.of(Data.requireFull(dropSuppliers)).map(DropSupplier::getOutput)
                     .collect(Collectors.toSet());
             if (supplyPipes.size() != 1)
                 throw new PipelineConfigurationException("The pipeline suppliers must feed exactly 1 supply pipe.");
@@ -288,7 +290,7 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
         @SafeVarargs
         @SuppressWarnings("unchecked")
         public final <D> Builder<S> fork(Pipe<D> input, InputWorker<D>... outputs) {
-            return fork(input, Stream.of(Sugar.requireFull(outputs)).map(InputWorker::getInput).toArray(Pipe[]::new));
+            return fork(input, Stream.of(Data.requireFull(outputs)).map(InputWorker::getInput).toArray(Pipe[]::new));
         }
 
         /**
@@ -367,7 +369,7 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
         @SafeVarargs
         @SuppressWarnings("unchecked")
         public final <D> Builder<S> join(Reducer<D> reducer, Pipe<D> output, OutputWorker<D>... inputs) {
-            return join(reducer, output, Stream.of(Sugar.requireFull(inputs)).map(OutputWorker::getOutput)
+            return join(reducer, output, Stream.of(Data.requireFull(inputs)).map(OutputWorker::getOutput)
                     .toArray(Pipe[]::new));
         }
 
@@ -396,7 +398,7 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
         }
 
         private Builder<S> attach(PipelineWorker... pipelineWorkers) {
-            this.pipelineWorkers.addAll(List.of(Sugar.requireFull(pipelineWorkers)));
+            this.pipelineWorkers.addAll(List.of(Data.requireFull(pipelineWorkers)));
             return this;
         }
     }

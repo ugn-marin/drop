@@ -1,6 +1,6 @@
 package lab.drop.pipeline;
 
-import lab.drop.function.UnsafeConsumer;
+import lab.drop.functional.UnsafeConsumer;
 
 /**
  * A drop function acting upon drops from an input pipe, and passing them to an output pipe as soon as done. Essentially

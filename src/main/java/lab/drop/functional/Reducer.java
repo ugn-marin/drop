@@ -1,6 +1,6 @@
-package lab.drop.function;
+package lab.drop.functional;
 
-import lab.drop.Sugar;
+import lab.drop.data.Data;
 
 import java.util.Comparator;
 import java.util.List;
@@ -75,7 +75,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
      */
     static <T> Reducer<T> from(BinaryOperator<T> operator) {
         return items -> {
-            var iterator = Sugar.requireNonEmpty(items).iterator();
+            var iterator = Data.requireNonEmpty(items).iterator();
             T result = iterator.next();
             while (iterator.hasNext())
                 result = operator.apply(result, iterator.next());
@@ -86,25 +86,25 @@ public interface Reducer<T> extends Function<List<T>, T> {
     /**
      * Returns a reducer returning the first item of non-empty lists, or else null. Equivalent to:
      * <pre>
-     * Reducer.orElseNull(Sugar::first)
+     * Reducer.orElseNull(Data::first)
      * </pre>
      * @param <T> The items type.
      * @return The reducer.
      */
     static <T> Reducer<T> first() {
-        return orElseNull(Sugar::first);
+        return orElseNull(Data::first);
     }
 
     /**
      * Returns a reducer returning the last item of non-empty lists, or else null. Equivalent to:
      * <pre>
-     * Reducer.orElseNull(Sugar::last)
+     * Reducer.orElseNull(Data::last)
      * </pre>
      * @param <T> The items type.
      * @return The reducer.
      */
     static <T> Reducer<T> last() {
-        return orElseNull(Sugar::last);
+        return orElseNull(Data::last);
     }
 
     /**
@@ -150,7 +150,7 @@ public interface Reducer<T> extends Function<List<T>, T> {
      */
     static Reducer<Exception> suppressor() {
         return orElseNull(exceptions -> {
-            var main = Sugar.removeFirst(Sugar.requireNoneNull(exceptions));
+            var main = Data.removeFirst(Data.requireNoneNull(exceptions));
             exceptions.forEach(main::addSuppressed);
             return main;
         });

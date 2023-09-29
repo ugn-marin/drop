@@ -1,4 +1,4 @@
-package lab.drop.function;
+package lab.drop.functional;
 
 import lab.drop.Sugar;
 

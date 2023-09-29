@@ -1,6 +1,6 @@
 package lab.drop.concurrent;
 
-import lab.drop.Sugar;
+import lab.drop.data.Data;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,7 +19,7 @@ public class Limiter {
      * @param limit The limit.
      */
     public Limiter(int limit) {
-        this.limit = Sugar.requirePositive(limit);
+        this.limit = Data.requirePositive(limit);
     }
 
     /**

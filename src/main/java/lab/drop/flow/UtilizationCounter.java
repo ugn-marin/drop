@@ -1,6 +1,6 @@
 package lab.drop.flow;
 
-import lab.drop.Sugar;
+import lab.drop.data.Data;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,7 +22,7 @@ public class UtilizationCounter {
      * @param concurrency The concurrency level of the measured work.
      */
     public UtilizationCounter(int concurrency) {
-        this.concurrency = Sugar.requirePositive(concurrency);
+        this.concurrency = Data.requirePositive(concurrency);
     }
 
     /**
@@ -79,7 +79,7 @@ public class UtilizationCounter {
         if (!started.get())
             throw new IllegalStateException("Utilization measurement was stopped or not started.");
         long timeStep = timeStep();
-        int wereBusy = Sugar.requireRange(currentBusy.addAndGet(change), 0, concurrency) - change;
+        int wereBusy = Data.requireRange(currentBusy.addAndGet(change), 0, concurrency) - change;
         flatTime.add(timeStep);
         busyTime.add(timeStep * wereBusy);
     }

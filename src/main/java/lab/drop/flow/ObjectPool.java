@@ -1,10 +1,9 @@
 package lab.drop.flow;
 
-import lab.drop.Sugar;
-import lab.drop.function.Checked;
-import lab.drop.function.Reducer;
-import lab.drop.function.UnsafeConsumer;
-import lab.drop.function.UnsafeSupplier;
+import lab.drop.functional.Checked;
+import lab.drop.functional.Reducer;
+import lab.drop.functional.UnsafeConsumer;
+import lab.drop.functional.UnsafeSupplier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,10 +87,10 @@ public class ObjectPool<T> implements UnsafeSupplier<T>, Consumer<T> {
     public void drain(UnsafeConsumer<T> action, Reducer<Exception> exceptionReducer) throws Exception {
         Objects.requireNonNull(exceptionReducer, "Exception reducer is null.");
         List<Exception> exceptions = new ArrayList<>(size());
-        Sugar.acceptWhile(objectsQueue::poll, Objects.requireNonNull(action, "Action is null.")
+        Flow.acceptWhile(objectsQueue::poll, Objects.requireNonNull(action, "Action is null.")
                 .toHandledConsumer(exceptions::add)::accept, Objects::nonNull);
         if (!exceptions.isEmpty())
-            Sugar.throwIfNonNull(exceptionReducer.apply(exceptions));
+            Flow.throwIfNonNull(exceptionReducer.apply(exceptions));
     }
 
     /**

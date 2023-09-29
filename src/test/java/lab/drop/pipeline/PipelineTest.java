@@ -5,11 +5,10 @@ import lab.drop.calc.Scale;
 import lab.drop.calc.Units;
 import lab.drop.concurrent.Concurrent;
 import lab.drop.concurrent.Interruptible;
+import lab.drop.data.Data;
+import lab.drop.flow.Flow;
 import lab.drop.flow.Retry;
-import lab.drop.function.ConditionalConsumer;
-import lab.drop.function.Reducer;
-import lab.drop.function.UnsafeConsumer;
-import lab.drop.function.UnsafeRunnable;
+import lab.drop.functional.*;
 import lab.drop.pipeline.monitoring.PipelineWorkerState;
 import lab.drop.pipeline.workers.*;
 import lab.drop.runtime.Environment;
@@ -291,7 +290,7 @@ class PipelineTest {
 
     @Test
     void states1() throws Exception {
-        var pipeline = Pipelines.direct(Sugar.stream(abc), new DropConsumer<>(new SupplyPipe<>(smallCapacity)) {
+        var pipeline = Pipelines.direct(Functional.stream(abc), new DropConsumer<>(new SupplyPipe<>(smallCapacity)) {
             @Override
             public void accept(Character drop) {
                 assertEquals(PipelineWorkerState.Running, getState());
@@ -310,7 +309,7 @@ class PipelineTest {
 
     @Test
     void states2() throws Exception {
-        var pipeline = Pipelines.direct(Sugar.stream(abc), new DropConsumer<>(new SupplyPipe<>(smallCapacity)) {
+        var pipeline = Pipelines.direct(Functional.stream(abc), new DropConsumer<>(new SupplyPipe<>(smallCapacity)) {
             @Override
             public void accept(Character drop) {
                 throw new NumberFormatException();
@@ -449,7 +448,7 @@ class PipelineTest {
         pipeline.run();
         assertEquals(five.length(), charAccumulator.getValue().length());
         bottlenecks(pipeline);
-        Sugar.requireRange(usedThreadIndexes.size(), 3, 10);
+        Data.requireRange(usedThreadIndexes.size(), 3, 10);
     }
 
     @Test
@@ -892,7 +891,7 @@ class PipelineTest {
     @Test
     void stream_conditional_accumulator1() throws Exception {
         var supplyPipe = new SupplyPipe<>(minimumCapacity, (Predicate<Character>) Character::isAlphabetic);
-        var supplier = Pipelines.supplier(supplyPipe, Sugar.stream(abc));
+        var supplier = Pipelines.supplier(supplyPipe, Functional.stream(abc));
         var accumulator = new CharAccumulator(supplyPipe, 1);
         var pipeline = Pipelines.direct(supplier, accumulator);
         System.out.println(pipeline);
@@ -904,7 +903,7 @@ class PipelineTest {
     @Test
     void stream_parallel_accumulator1() throws Exception {
         var supplyPipe = new SupplyPipe<Character>(smallCapacity);
-        var supplier = Pipelines.supplier(supplyPipe, Sugar.stream(five).parallel());
+        var supplier = Pipelines.supplier(supplyPipe, Functional.stream(five).parallel());
         var accumulator = new CharAccumulator(supplyPipe, 1);
         var pipeline = Pipelines.direct(supplier, accumulator);
         System.out.println(pipeline);
@@ -916,7 +915,7 @@ class PipelineTest {
     @Test
     void stream_parallel_accumulator1slow() throws Exception {
         var supplyPipe = new SupplyPipe<Character>(smallCapacity);
-        var supplier = Pipelines.supplier(supplyPipe, Sugar.stream(full).parallel());
+        var supplier = Pipelines.supplier(supplyPipe, Functional.stream(full).parallel());
         var accumulator = new CharAccumulator(supplyPipe, 1) {
             @Override
             public void accept(Character drop) throws InterruptedException {
@@ -1173,7 +1172,7 @@ class PipelineTest {
     @Test
     void unique_direct_stream() throws Exception {
         var accum = new CharAccumulator(new SupplyPipe<>(smallCapacity), 1);
-        var pipeline = Pipelines.direct(Sugar.stream(five).distinct(), accum);
+        var pipeline = Pipelines.direct(Functional.stream(five).distinct(), accum);
         System.out.println(pipeline);
         pipeline.run();
         assertEquals("1. Theavrgpsonuldbtic,wkABC:D-EFGHIJKLMNOPQRSUVWXYZ023456789\n", accum.getValue());
@@ -1183,7 +1182,7 @@ class PipelineTest {
     @Test
     void unique_direct_stream_parallel() throws Exception {
         var accum = new CharAccumulator(new SupplyPipe<>(smallCapacity), 3);
-        var pipeline = Pipelines.direct(Sugar.stream(five).distinct(), accum);
+        var pipeline = Pipelines.direct(Functional.stream(five).distinct(), accum);
         System.out.println(pipeline);
         pipeline.run();
         assertEquals("1. Theavrgpsonuldbtic,wkABC:D-EFGHIJKLMNOPQRSUVWXYZ023456789\n".length(),
@@ -1194,7 +1193,7 @@ class PipelineTest {
     @Test
     void unique_direct_stream_parallel_counter() throws Exception {
         var counter = new AtomicInteger();
-        var pipeline = Pipelines.direct(Sugar.stream(five).distinct(), 5,
+        var pipeline = Pipelines.direct(Functional.stream(five).distinct(), 5,
                 c -> counter.incrementAndGet());
         System.out.println(pipeline);
         pipeline.run();
@@ -1209,7 +1208,7 @@ class PipelineTest {
         var pipeline = Pipeline.from(supplyPipe).into(accum).build();
         System.out.println(pipeline);
         Concurrent.run(pipeline);
-        pipeline.pushAll(Sugar.stream(five));
+        pipeline.pushAll(Functional.stream(five));
         pipeline.setEndOfInput();
         pipeline.await();
         assertEquals(five, accum.getValue());
@@ -1445,7 +1444,7 @@ class PipelineTest {
                 i -> Interruptible.sleep(0))).build();
         System.out.println(pipeline);
         Concurrent.run(pipeline);
-        var tasks = Sugar.fill(concurrency, () -> (UnsafeRunnable) () -> {
+        var tasks = Data.fill(concurrency, () -> (UnsafeRunnable) () -> {
             for (int i = 0; i < 10000; i++)
                 pipeline.push(i);
         });
@@ -1526,7 +1525,7 @@ class PipelineTest {
         System.out.println(pipeline);
         Concurrent.run(pipeline);
         int times = 3;
-        Sugar.iterate(times, i -> Sugar.sneaky(() -> pipeline.push('a')));
+        Flow.iterate(times, i -> Functional.sneaky(() -> pipeline.push('a')));
         pipeline.setEndOfInput();
         pipeline.await();
         int actionsCount = 0;
@@ -1548,7 +1547,7 @@ class PipelineTest {
     Pipeline<Character> tree(int root) {
         var supplyPipe = new SupplyPipe<Character>(root);
         var builder = Pipeline.from(supplyPipe);
-        Pipe<Character>[] subPipesIn = Sugar.fill(supplyPipe.getBaseCapacity(), () ->
+        Pipe<Character>[] subPipesIn = Data.fill(supplyPipe.getBaseCapacity(), () ->
                 new ScopePipe<Character>(supplyPipe.getBaseCapacity() - 1)).toArray(Pipe[]::new);
         Pipe<Character>[] subPipesOut = Stream.of(subPipesIn).map(p -> new ScopePipe<Character>(p.getBaseCapacity()))
                 .toArray(Pipe[]::new);
@@ -1568,7 +1567,7 @@ class PipelineTest {
             if (pipes.length == 2) {
                 consumers.add(Pipelines.consumer(pipe, t -> consumersRun.incrementAndGet()));
             } else {
-                Pipe<T>[] subPipesIn = Sugar.fill(pipes.length - 1, () -> new ScopePipe<T>(pipes.length - 2))
+                Pipe<T>[] subPipesIn = Data.fill(pipes.length - 1, () -> new ScopePipe<T>(pipes.length - 2))
                         .toArray(Pipe[]::new);
                 Pipe<T>[] subPipesOut = Stream.of(subPipesIn).map(p -> new ScopePipe<T>(p.getBaseCapacity()))
                         .toArray(Pipe[]::new);
@@ -1589,7 +1588,7 @@ class PipelineTest {
         System.out.println(pipeline);
         Concurrent.run(pipeline);
         int times = 50;
-        Sugar.iterate(times, i -> Sugar.sneaky(() -> pipeline.push('a')));
+        Flow.iterate(times, i -> Functional.sneaky(() -> pipeline.push('a')));
         pipeline.setEndOfInput();
         pipeline.await();
         int actionsCount = 0;
@@ -1613,7 +1612,7 @@ class PipelineTest {
     Pipeline<Character> treeJoin(int root) {
         var supplyPipe = new SupplyPipe<Character>(root);
         var builder = Pipeline.from(supplyPipe);
-        Pipe<Character>[] subPipesIn = Sugar.fill(supplyPipe.getBaseCapacity(), () ->
+        Pipe<Character>[] subPipesIn = Data.fill(supplyPipe.getBaseCapacity(), () ->
                 new ScopePipe<Character>(supplyPipe.getBaseCapacity() - 1)).toArray(Pipe[]::new);
         Pipe<Character>[] subPipesOut = Stream.of(subPipesIn).map(p -> new ScopePipe<Character>(p.getBaseCapacity()))
                 .toArray(Pipe[]::new);
@@ -1640,7 +1639,7 @@ class PipelineTest {
             if (pipes.length == 2) {
                 functions.add(Pipelines.function(pipe, new ScopePipe<>(1), t -> functionsRun.incrementAndGet()));
             } else {
-                Pipe<T>[] subPipesIn = Sugar.fill(pipes.length - 1, () -> new ScopePipe<T>(pipes.length - 2))
+                Pipe<T>[] subPipesIn = Data.fill(pipes.length - 1, () -> new ScopePipe<T>(pipes.length - 2))
                         .toArray(Pipe[]::new);
                 Pipe<T>[] subPipesOut = Stream.of(subPipesIn).map(p -> new ScopePipe<T>(p.getBaseCapacity()))
                         .toArray(Pipe[]::new);
@@ -1657,8 +1656,8 @@ class PipelineTest {
     @SuppressWarnings("unchecked")
     <T> DropConsumer<Integer> treeJoin2(Pipeline.Builder<T> builder, List<Pipe<Integer>> joins) {
         if (joins.size() == 1)
-            return Pipelines.consumer(Sugar.first(joins), i -> consumersRun.incrementAndGet());
-        int group = Sugar.first(joins).getBaseCapacity() + 1;
+            return Pipelines.consumer(Data.first(joins), i -> consumersRun.incrementAndGet());
+        int group = Data.first(joins).getBaseCapacity() + 1;
         List<Pipe<Integer>> joined = new ArrayList<>(joins.size() / group);
         for (int i = 0; i < joins.size(); i += group) {
             Pipe<Integer>[] inputs = new Pipe[group];
@@ -1683,7 +1682,7 @@ class PipelineTest {
         var builder = Pipeline.from(fileSupplier).fork(files, filesToNameInput, filesToLinesInput,
                 filesToLineLengthsInput);
         var filesNames = new ScopePipe<String>(smallCapacity);
-        var filesToNames = Pipelines.function(filesToNameInput, filesNames, Sugar.compose(File::getAbsolutePath,
+        var filesToNames = Pipelines.function(filesToNameInput, filesNames, Functional.compose(File::getAbsolutePath,
                 s -> s + '\n'));
         var filesLines = new ScopePipe<Long>(smallCapacity);
         var filesLineLengths = new SupplyPipe<Map.Entry<String, Integer>>(mediumCapacity,

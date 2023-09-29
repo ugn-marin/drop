@@ -1,6 +1,6 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
+import lab.drop.data.Data;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -17,7 +17,7 @@ final class Fork<D> extends PipelineWorker implements InputWorker<D> {
 
     @SafeVarargs
     Fork(Pipe<D> input, Pipe<D>... outputs) {
-        super(true, (int) Stream.of(Sugar.requireNoneNull(outputs)).filter(p -> !(p instanceof SupplyGate)).count());
+        super(true, (int) Stream.of(Data.requireNoneNull(outputs)).filter(p -> !(p instanceof SupplyGate)).count());
         if (outputs.length < 2)
             throw new PipelineConfigurationException("Fork requires at least 2 output pipes.");
         this.input = Objects.requireNonNull(input, "Input pipe is required.");

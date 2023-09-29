@@ -1,7 +1,7 @@
 package lab.drop.concurrent;
 
-import lab.drop.Sugar;
 import lab.drop.calc.Units;
+import lab.drop.flow.Flow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ class BlockingThreadPoolExecutorTest {
         int each = 5;
         Set<Integer> finished = new HashSet<>();
         long start = System.currentTimeMillis();
-        Sugar.iterate(tasks, task -> pool.execute(() -> {
+        Flow.iterate(tasks, task -> pool.execute(() -> {
             Interruptible.sleep(each);
             Assertions.assertTrue(finished.stream().noneMatch(n -> n > task));
             Assertions.assertTrue(pool.getBlocked() <= 1);
