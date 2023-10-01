@@ -1,7 +1,7 @@
 package lab.drop.calc;
 
-import lab.drop.Sugar;
 import lab.drop.data.Data;
+import lab.drop.text.Text;
 
 import java.util.stream.Stream;
 
@@ -70,7 +70,7 @@ public class Units {
          * Describes the numeric value.
          */
         public static String describe(long value) {
-            return Sugar.remove(NumericUnit.numeric.describe(value, NumericUnit.values()), " ",
+            return Text.remove(NumericUnit.numeric.describe(value, NumericUnit.values()), " ",
                     NumericUnit.numeric.name());
         }
     }

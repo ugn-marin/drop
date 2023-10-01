@@ -1,6 +1,5 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
 import lab.drop.data.Data;
 import lab.drop.functional.Reducer;
 
@@ -26,7 +25,7 @@ final class Join<D> extends PipelineWorker implements OutputWorker<D> {
         super(true, Data.requireNoneNull(inputs).length);
         if (inputs.length < 2)
             throw new PipelineConfigurationException("Join requires at least 2 input pipes.");
-        if (!Sugar.instancesOf(List.of(inputs), SupplyGate.class).isEmpty())
+        if (!Data.instancesOf(List.of(inputs), SupplyGate.class).isEmpty())
             throw new PipelineConfigurationException("Joining different index scopes.");
         this.inputs = inputs;
         this.output = Objects.requireNonNull(output, "Output pipe is required.");

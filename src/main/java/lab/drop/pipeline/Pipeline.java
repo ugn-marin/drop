@@ -1,6 +1,5 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
 import lab.drop.data.Data;
 import lab.drop.data.Matrix;
 import lab.drop.flow.Flow;
@@ -157,8 +156,8 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
         if (isOpen)
             setEndOfInput();
         pipelineWorkers.forEach(pipelineWorker -> pipelineWorker.cancel(getThrowable()));
-        Flow.forEach(Stream.concat(Sugar.instancesOf(pipelineWorkers, InputWorker.class).stream(),
-                Sugar.instancesOf(pipelineWorkers, OutputWorker.class).stream()).map(new Converter<Object, Pipe<?>>()
+        Flow.forEach(Stream.concat(Data.instancesOf(pipelineWorkers, InputWorker.class).stream(),
+                Data.instancesOf(pipelineWorkers, OutputWorker.class).stream()).map(new Converter<Object, Pipe<?>>()
                 .put(InputWorker.class, InputWorker::getInput).put(OutputWorker.class, OutputWorker::getOutput)
                 .orElseThrow()), Pipe::clear);
     }
@@ -212,7 +211,7 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
      * structure of the pipeline, which directs more drops through them than through other pipes.
      */
     public Set<InputWorker<?>> getBottlenecks() {
-        return Sugar.<InputWorker<?>>instancesOf(externalWorkers, InputWorker.class).stream()
+        return Data.<InputWorker<?>>instancesOf(externalWorkers, InputWorker.class).stream()
                 .filter(iw -> iw.getInput().getAverageLoad() > 0.95).collect(Collectors.toSet());
     }
 

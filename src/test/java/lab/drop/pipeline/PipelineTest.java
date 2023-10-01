@@ -1,6 +1,5 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
 import lab.drop.calc.Scale;
 import lab.drop.calc.Units;
 import lab.drop.concurrent.Concurrent;
@@ -12,6 +11,7 @@ import lab.drop.functional.*;
 import lab.drop.pipeline.monitoring.PipelineWorkerState;
 import lab.drop.pipeline.workers.*;
 import lab.drop.runtime.Environment;
+import lab.drop.text.Text;
 import org.junit.jupiter.api.*;
 
 import java.io.File;
@@ -1141,7 +1141,7 @@ class PipelineTest {
                 charAccumulator, fl, fd).into(charAccumulator).build();
         System.out.println(pipeline);
         pipeline.run();
-        assertEquals(Sugar.replace(full, " ", ".", ",", ".", ":", ".", "-", ".", digits, ".".repeat(10)),
+        assertEquals(Text.replace(full, " ", ".", ",", ".", ":", ".", "-", ".", digits, ".".repeat(10)),
                 charAccumulator.getValue());
         bottlenecks(pipeline);
     }
@@ -1395,7 +1395,7 @@ class PipelineTest {
         });
         pipeline.run();
         assertEquals(full.length() * 5, consumer.getValue().length());
-        assertEquals(full, Sugar.remove(consumer.getValue(), "null"));
+        assertEquals(full, Text.remove(consumer.getValue(), "null"));
         assertEquals(0, pipeline.getCanceledWork());
         bottlenecks(pipeline);
     }

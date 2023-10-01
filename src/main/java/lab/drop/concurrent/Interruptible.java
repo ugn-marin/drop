@@ -1,6 +1,6 @@
 package lab.drop.concurrent;
 
-import lab.drop.Sugar;
+import lab.drop.data.Data;
 import lab.drop.functional.UnsafeConsumer;
 import lab.drop.functional.UnsafeFunction;
 import lab.drop.functional.UnsafeRunnable;
@@ -197,7 +197,7 @@ public class Interruptible {
      * Returns true if the exception is a result of a thread interruption.
      */
     public static boolean isInterruption(Exception e) {
-        return Sugar.instanceOfAny(e, InterruptedException.class, InterruptedRuntimeException.class,
+        return Data.instanceOfAny(e, InterruptedException.class, InterruptedRuntimeException.class,
                 ClosedByInterruptException.class, InterruptedIOException.class, FileLockInterruptionException.class,
                 InterruptedNamingException.class, InterruptedByTimeoutException.class);
     }

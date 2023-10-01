@@ -1,6 +1,5 @@
 package lab.drop.functional;
 
-import lab.drop.Sugar;
 import lab.drop.data.Data;
 import lab.drop.flow.Flow;
 
@@ -61,7 +60,7 @@ public class Functional {
             try {
                 return callable.call();
             } catch (Exception e) {
-                throw Sugar.sneaky(e);
+                throw Flow.sneaky(e);
             }
         };
     }
@@ -122,5 +121,20 @@ public class Functional {
     public static UnsafeRunnable merge(UnsafeRunnable... tasks) {
         Data.requireFull(tasks);
         return () -> Flow.forEach(Stream.of(tasks), UnsafeRunnable::run);
+    }
+
+    /**
+     * Performs an unsafe cast to the required non-primitive type. To be used as a {@link java.util.function.Function}.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T cast(Object object) {
+        return (T) object;
+    }
+
+    /**
+     * Returns the Boolean value. To be used as an identity {@link java.util.function.Predicate}.
+     */
+    public static boolean is(Boolean value) {
+        return value != null && value;
     }
 }

@@ -1,12 +1,11 @@
 package lab.drop.data;
 
 import lab.drop.flow.Flow;
+import lab.drop.functional.Functional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -16,6 +15,56 @@ import java.util.stream.StreamSupport;
 public class Data {
 
     private Data() {}
+
+    /**
+     * Returns the cast object if instance of type.
+     * @param object An object.
+     * @param type A class.
+     * @param orElse The default return value if the object is not an instance of the type.
+     * @param <T> The type to cast the object to, if is instance of the type. Must be assignable from <code>type</code>
+     *           - not validated. Must be non-primitive.
+     * @return The cast object if instance of type, or the default.
+     */
+    public static <T> T as(Object object, Class<?> type, T orElse) {
+        Objects.requireNonNull(type, "Type is null.");
+        return type.isInstance(object) ? Functional.cast(object) : orElse;
+    }
+
+    /**
+     * Returns an Optional of the cast object if instance of type.
+     * @param object An object.
+     * @param type A class.
+     * @param <T> The type to cast the object to, if is instance of the type. Must be assignable from <code>type</code>
+     *           - not validated. Must be non-primitive.
+     * @return An Optional of the cast object if instance of type, or empty otherwise.
+     */
+    public static <T> Optional<T> as(Object object, Class<?> type) {
+        return Optional.ofNullable(as(object, type, null));
+    }
+
+    /**
+     * Returns a set of all members of the collection that are instances of a certain type.
+     * @param objects An objects collection.
+     * @param type A class.
+     * @param <T> The type to cast the found members to. Must be assignable from <code>type</code> - not validated.
+     * @return A new set of the matching members.
+     */
+    public static <T> Set<T> instancesOf(Collection<?> objects, Class<?> type) {
+        Objects.requireNonNull(type, "Type is null.");
+        return Objects.requireNonNull(objects, "Collection is null.").stream().filter(type::isInstance)
+                .map(Functional::<T>cast).collect(Collectors.toSet());
+    }
+
+    /**
+     * Returns true if the object is an instance of one or more of the passed classes.
+     * @param object The object.
+     * @param types The classes.
+     * @return True if instance of any, else false.
+     */
+    public static boolean instanceOfAny(Object object, Class<?>... types) {
+        return object != null && Stream.of(Data.requireFull(types))
+                .anyMatch(t -> t.isAssignableFrom(object.getClass()));
+    }
 
     /**
      * Validates that the value is within the range. Only validated against the non-null range arguments.

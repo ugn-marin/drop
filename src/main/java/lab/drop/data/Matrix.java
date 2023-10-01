@@ -1,6 +1,7 @@
 package lab.drop.data;
 
 import lab.drop.flow.Flow;
+import lab.drop.text.MatrixStringifier;
 
 import java.util.*;
 import java.util.function.BiConsumer;

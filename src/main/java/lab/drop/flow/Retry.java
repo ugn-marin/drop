@@ -1,6 +1,5 @@
 package lab.drop.flow;
 
-import lab.drop.Sugar;
 import lab.drop.concurrent.Interruptible;
 import lab.drop.data.Data;
 import lab.drop.functional.Reducer;
@@ -55,7 +54,7 @@ public final class Retry<O> implements Callable<O> {
      */
     @SafeVarargs
     public static BiPredicate<Integer, Exception> whitelist(Class<? extends Exception>... types) {
-        return (t, e) -> Sugar.instanceOfAny(e, types);
+        return (t, e) -> Data.instanceOfAny(e, types);
     }
 
     @Override

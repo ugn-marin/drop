@@ -1,5 +1,6 @@
 package lab.drop.data;
 
+import lab.drop.text.MatrixStringifier;
 import org.junit.jupiter.api.*;
 
 import java.util.List;

@@ -1,12 +1,13 @@
 package lab.drop.flow;
 
-import lab.drop.Sugar;
+import lab.drop.concurrent.InterruptedRuntimeException;
 import lab.drop.concurrent.Lazy;
 import lab.drop.data.Range;
 import lab.drop.functional.Reducer;
 import lab.drop.functional.UnsafeConsumer;
 import lab.drop.functional.UnsafeRunnable;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -122,6 +123,29 @@ public class Flow {
     }
 
     /**
+     * Returns the exception as is if runtime exception, or wrapped in a new UndeclaredThrowableException otherwise.
+     */
+    public static RuntimeException sneaky(Exception e) {
+        Objects.requireNonNull(e, "Exception is null.");
+        if (e instanceof RuntimeException re)
+            return re;
+        else if (e instanceof InterruptedException ie)
+            return new InterruptedRuntimeException(ie);
+        return new UndeclaredThrowableException(e);
+    }
+
+    /**
+     * Returns the throwable as an exception.
+     * @param throwable A throwable.
+     * @return The throwable if an exception or null, or wrapped in a new UndeclaredThrowableException otherwise.
+     */
+    public static Exception toException(Throwable throwable) {
+        if (throwable instanceof Exception e)
+            return e;
+        return throwable == null ? null : new UndeclaredThrowableException(throwable);
+    }
+
+    /**
      * Throws the throwable as an exception, or as Error if is an Error.
      * @param throwable A throwable.
      * @throws Exception The throwable if not null, thrown as is if instance of Exception or Error, or wrapped in a new
@@ -132,7 +156,7 @@ public class Flow {
             return;
         if (throwable instanceof Error e)
             throw e;
-        throw Sugar.toException(throwable);
+        throw toException(throwable);
     }
 
     /**
@@ -194,7 +218,7 @@ public class Flow {
         runSteps(steps, throwable -> {
             if (throwable instanceof Error e)
                 throw e;
-            exceptions.get().add(Sugar.toException(throwable));
+            exceptions.get().add(toException(throwable));
         });
         throwIfAny(exceptionsReducer, exceptions);
     }

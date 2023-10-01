@@ -1,6 +1,6 @@
 package lab.drop.functional;
 
-import lab.drop.Sugar;
+import lab.drop.flow.Flow;
 
 import java.util.function.Function;
 
@@ -22,7 +22,7 @@ public interface UnsafeFunction<I, O> {
             try {
                 return apply(t);
             } catch (Exception e) {
-                throw Sugar.sneaky(e);
+                throw Flow.sneaky(e);
             }
         };
     }

@@ -1,7 +1,5 @@
 package lab.drop.functional;
 
-import lab.drop.Sugar;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -41,7 +39,7 @@ public class Converter<I, O> implements Function<I, O> {
      */
     public Converter(Map<Class<? extends I>, Function<? extends I, O>> matches, Function<? extends I, O> orElse) {
         this.matches = new HashMap<>(Objects.requireNonNull(matches, "Matches are null.").size());
-        matches.forEach((key, value) -> put(Sugar.cast(key), value));
+        matches.forEach((key, value) -> put(Functional.cast(key), value));
         orElse(orElse);
         reducer = Reducer.from((c1, c2) -> c1.isAssignableFrom(c2) ? c2 : c1);
     }
@@ -55,7 +53,7 @@ public class Converter<I, O> implements Function<I, O> {
      */
     public <S extends I> Converter<I, O> put(Class<S> type, Function<S, O> function) {
         matches.put(Objects.requireNonNull(type, "Type is null."),
-                Sugar.cast(Objects.requireNonNull(function, "Function is null.")));
+                Functional.cast(Objects.requireNonNull(function, "Function is null.")));
         return this;
     }
 
@@ -65,7 +63,7 @@ public class Converter<I, O> implements Function<I, O> {
      * @return This converter.
      */
     public Converter<I, O> orElse(Function<? extends I, O> function) {
-        this.orElse = Sugar.cast(Objects.requireNonNull(function, "Function is null."));
+        this.orElse = Functional.cast(Objects.requireNonNull(function, "Function is null."));
         return this;
     }
 

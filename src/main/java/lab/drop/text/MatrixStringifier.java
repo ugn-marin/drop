@@ -1,6 +1,8 @@
-package lab.drop.data;
+package lab.drop.text;
 
-import lab.drop.Sugar;
+import lab.drop.data.Data;
+import lab.drop.data.Matrix;
+import lab.drop.functional.Functional;
 
 import java.util.*;
 import java.util.function.Function;
@@ -88,7 +90,7 @@ public class MatrixStringifier implements Function<Matrix<?>, String> {
     @Override
     public String apply(Matrix<?> matrix) {
         if (hasHeaders) {
-            var table = matrix.map(Sugar::cast);
+            var table = matrix.map(Functional::cast);
             table.addRowBefore(0, headers);
             matrix = table;
         }
@@ -164,6 +166,6 @@ public class MatrixStringifier implements Function<Matrix<?>, String> {
         }
         splitters.add(splitter.toString());
         var maxSplitter = splitters.stream().max(Comparator.comparing(String::length)).orElseThrow();
-        return tableString.replace(maxSplitter, Sugar.replace(maxSplitter, "- |", "--|", "| -", "|--"));
+        return tableString.replace(maxSplitter, Text.replace(maxSplitter, "- |", "--|", "| -", "|--"));
     }
 }

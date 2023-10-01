@@ -1,12 +1,12 @@
 package lab.drop.runtime;
 
-import lab.drop.Sugar;
 import lab.drop.calc.Units;
 import lab.drop.concurrent.Concurrent;
 import lab.drop.data.Data;
 import lab.drop.flow.Flow;
 import lab.drop.functional.Reducer;
 import lab.drop.functional.UnsafeRunnable;
+import lab.drop.text.Text;
 
 import java.io.*;
 import java.util.*;
@@ -146,7 +146,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @param command The command. Only non-null elements are used.
      */
     public CommandLine(boolean collectOutput, Object... command) {
-        var commandList = List.of(Sugar.toStrings(command));
+        var commandList = List.of(Text.toStrings(command));
         if (commandList.isEmpty())
             throw new IllegalArgumentException("No valid command components.");
         processBuilder = new ProcessBuilder(commandList);

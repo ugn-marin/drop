@@ -1,12 +1,13 @@
 package lab.drop.pipeline;
 
-import lab.drop.Sugar;
 import lab.drop.concurrent.LazyRunnable;
+import lab.drop.data.Data;
 import lab.drop.data.Matrix;
 import lab.drop.data.Range;
 import lab.drop.flow.Flow;
 import lab.drop.functional.Functional;
 import lab.drop.pipeline.monitoring.PipelineComponentMonitoring;
+import lab.drop.text.Text;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -53,7 +54,7 @@ class PipelineChart {
     }
 
     private void classifyComponents() {
-        Set<OutputWorker<?>> outputWorkers = Sugar.instancesOf(pipelineWorkers, OutputWorker.class);
+        Set<OutputWorker<?>> outputWorkers = Data.instancesOf(pipelineWorkers, OutputWorker.class);
         outputWorkers.forEach(ow -> outputSuppliers.compute(ow.getOutput(), (pipe, workers) -> {
             if (workers == null) {
                 return new ArrayList<>(List.of(ow));
@@ -67,7 +68,7 @@ class PipelineChart {
                 return workers;
             }
         }));
-        Set<InputWorker<?>> inputWorkers = Sugar.instancesOf(pipelineWorkers, InputWorker.class);
+        Set<InputWorker<?>> inputWorkers = Data.instancesOf(pipelineWorkers, InputWorker.class);
         inputWorkers.forEach(iw -> inputConsumers.compute(iw.getInput(), (pipe, workers) -> {
             if (workers == null) {
                 return new ArrayList<>(List.of(iw));
@@ -77,11 +78,11 @@ class PipelineChart {
                 return workers;
             }
         }));
-        forks = Sugar.instancesOf(pipelineWorkers, Fork.class);
+        forks = Data.instancesOf(pipelineWorkers, Fork.class);
         if (forks.stream().anyMatch(f -> Stream.of(f.getOutputs()).map(Pipe::getBaseCapacity)
                 .collect(Collectors.toSet()).size() > 1))
             warnings.add(PipelineWarning.UNBALANCED_FORK);
-        joins = Sugar.instancesOf(pipelineWorkers, Join.class);
+        joins = Data.instancesOf(pipelineWorkers, Join.class);
     }
 
     private void next() {
@@ -196,7 +197,7 @@ class PipelineChart {
     private void fillComponents() {
         componentsMonitoringMatrix = new Matrix<>(matrix.size());
         componentsMonitoringMatrix.getBlock().forEach(coordinates -> componentsMonitoringMatrix.set(coordinates,
-                Sugar.as(matrix.get(coordinates), PipelineComponentMonitoring.class, null)));
+                Data.as(matrix.get(coordinates), PipelineComponentMonitoring.class, null)));
     }
 
     private void raiseRange(Range range, int y) {
@@ -244,7 +245,7 @@ class PipelineChart {
             pipesExtensions(lineSB, 0);
             sb.append(lineSB).append("\n");
         });
-        return Sugar.replace(sb.toString().stripTrailing(), "- -", "---");
+        return Text.replace(sb.toString().stripTrailing(), "- -", "---");
     }
 
     private void pipesLeading(StringBuilder line, int offset) {
