@@ -70,13 +70,7 @@ public class Functional {
      */
     public static <T> Supplier<Unsafe<T>> toMonadicSupplier(Callable<T> callable) {
         Objects.requireNonNull(callable, "Callable is null.");
-        return () -> {
-            try {
-                return Unsafe.success(callable.call());
-            } catch (Exception e) {
-                return Unsafe.failure(e);
-            }
-        };
+        return Flow.orElse(() -> Unsafe.success(callable.call()), Unsafe::failure);
     }
 
     /**
