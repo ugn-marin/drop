@@ -1,6 +1,8 @@
 package lab.drop.concurrent;
 
 import lab.drop.flow.Flow;
+import lab.drop.functional.Functional;
+import lab.drop.functional.Unsafe;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -32,6 +34,16 @@ public class Lazy<T> implements Supplier<T> {
      */
     public Lazy(Callable<T> callable, Function<Exception, T> onException) {
         this(Flow.orElse(callable, onException));
+    }
+
+    /**
+     * Returns a lazy supplier returning a monadic wrapper of the result of the given callable.
+     * @param callable A callable supplying the value. Will be calculated on the first attempt to get the value.
+     * @param <T> The value type.
+     * @return The new lazy supplier.
+     */
+    public static <T> Lazy<Unsafe<T>> monadic(Callable<T> callable) {
+        return new Lazy<>(Functional.toMonadicSupplier(callable));
     }
 
     /**
