@@ -56,33 +56,28 @@ class PipelineChart {
     private void classifyComponents() {
         Set<OutputWorker<?>> outputWorkers = Data.instancesOf(pipelineWorkers, OutputWorker.class);
         outputWorkers.forEach(ow -> outputSuppliers.compute(ow.getOutput(), (pipe, workers) -> {
-            if (workers == null) {
+            if (workers == null)
                 return new ArrayList<>(List.of(ow));
-            } else if (!(pipe instanceof SupplyGate)) {
+            else if (!(pipe instanceof SupplyGate))
                 throw new PipelineConfigurationException("Multiple workers push into the same pipe using different " +
                         "index scopes.");
-            } else {
-                workers.add(ow);
-                workers.sort(Comparator.comparing(Objects::toString));
-                warnings.add(PipelineWarning.MULTIPLE_INPUTS);
-                return workers;
-            }
+            warnings.add(PipelineWarning.MULTIPLE_INPUTS);
+            return addSorted(workers, ow);
         }));
         Set<InputWorker<?>> inputWorkers = Data.instancesOf(pipelineWorkers, InputWorker.class);
-        inputWorkers.forEach(iw -> inputConsumers.compute(iw.getInput(), (pipe, workers) -> {
-            if (workers == null) {
-                return new ArrayList<>(List.of(iw));
-            } else {
-                workers.add(iw);
-                workers.sort(Comparator.comparing(Objects::toString));
-                return workers;
-            }
-        }));
+        inputWorkers.forEach(iw -> inputConsumers.compute(iw.getInput(),
+                (pipe, workers) -> workers == null ? new ArrayList<>(List.of(iw)) : addSorted(workers, iw)));
         forks = Data.instancesOf(pipelineWorkers, Fork.class);
         if (forks.stream().anyMatch(f -> Stream.of(f.getOutputs()).map(Pipe::getBaseCapacity)
                 .collect(Collectors.toSet()).size() > 1))
             warnings.add(PipelineWarning.UNBALANCED_FORK);
         joins = Data.instancesOf(pipelineWorkers, Join.class);
+    }
+
+    private <T> List<T> addSorted(List<T> workers, T worker) {
+        workers.add(worker);
+        workers.sort(Comparator.comparing(Objects::toString));
+        return workers;
     }
 
     private void next() {
@@ -167,8 +162,8 @@ class PipelineChart {
         if (index != null) {
             matrix.set(index, null);
             if (o instanceof Pipe)
-                matrix.set(index, "-".repeat(matrix.getColumn(index.getX()).stream().filter(Objects::nonNull).mapToInt(
-                        c -> Objects.toString(c).length()).max().orElse(3) - 1) + '+');
+                matrix.set(index, "-".repeat(matrix.getColumn(index.getX()).stream().filter(Objects::nonNull)
+                        .mapToInt(c -> Objects.toString(c).length()).max().orElse(3) - 1) + '+');
         }
     }
 
