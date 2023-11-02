@@ -4,6 +4,7 @@ import lab.drop.flow.Flow;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -67,6 +68,19 @@ public interface Monad<T> {
     default T orElse(Supplier<T> supplier) {
         Objects.requireNonNull(supplier, "Supplier is null.");
         return succeeded() ? value() : supplier.get();
+    }
+
+    /**
+     * Returns a value computed according to the monad result.
+     * @param success The value function if this is a wrapping of a success result.
+     * @param failure The value function if this is a wrapping of a failure result.
+     * @param <O> The output value type.
+     * @return The output value.
+     */
+    default <O> O match(Function<T, O> success, Function<Exception, O> failure) {
+        Objects.requireNonNull(success, "Success function is null.");
+        Objects.requireNonNull(failure, "Failure function is null.");
+        return succeeded() ? success.apply(value()) : failure.apply(exception());
     }
 
     /**

@@ -3,6 +3,7 @@ package lab.drop.functional;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * A monadic wrapper of an unsafe operation result - a value or an exception (checked or unchecked).
@@ -31,6 +32,19 @@ public record Unsafe<T>(T value, Exception exception) implements Monad<T> {
      */
     public static <T> Unsafe<T> failure(Exception exception) {
         return new Unsafe<>(null, Objects.requireNonNull(exception, "Exception is null."));
+    }
+
+    /**
+     * Returns an unsafe instance computed according to monad result.
+     * @param success The value function if this is a wrapping of a success result.
+     * @param failure The exception function if this is a wrapping of a failure result.
+     * @param <O> The output value type.
+     * @return The new unsafe instance.
+     */
+    public <O> Unsafe<O> map(Function<T, O> success, UnaryOperator<Exception> failure) {
+        Objects.requireNonNull(success, "Success function is null.");
+        Objects.requireNonNull(failure, "Failure operator is null.");
+        return succeeded() ? success(success.apply(value())) : failure(failure.apply(exception()));
     }
 
     /**
