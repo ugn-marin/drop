@@ -35,6 +35,17 @@ public record Unsafe<T>(T value, Exception exception) implements Monad<T> {
     }
 
     /**
+     * Returns an unsafe instance computed according to monad result. If this is a wrapping of a failure result, the
+     * exception is preserved as is.
+     * @param mapper The value function if this is a wrapping of a success result.
+     * @param <O> The output value type.
+     * @return The new unsafe instance.
+     */
+    public <O> Unsafe<O> map(Function<T, O> mapper) {
+        return map(mapper, UnaryOperator.identity());
+    }
+
+    /**
      * Returns an unsafe instance computed according to monad result.
      * @param success The value function if this is a wrapping of a success result.
      * @param failure The exception function if this is a wrapping of a failure result.
