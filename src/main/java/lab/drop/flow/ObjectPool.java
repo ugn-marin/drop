@@ -1,12 +1,9 @@
 package lab.drop.flow;
 
 import lab.drop.functional.Checked;
-import lab.drop.functional.Reducer;
 import lab.drop.functional.UnsafeConsumer;
 import lab.drop.functional.UnsafeSupplier;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -20,7 +17,7 @@ import java.util.stream.Stream;
  */
 public class ObjectPool<T> implements UnsafeSupplier<T>, Consumer<T> {
     private final Supplier<Checked<T>> supplier;
-    private final Queue<T> objectsQueue = new ConcurrentLinkedQueue<>();
+    protected final Queue<T> objectsQueue = new ConcurrentLinkedQueue<>();
 
     /**
      * Constructs an empty object pool.
@@ -70,33 +67,23 @@ public class ObjectPool<T> implements UnsafeSupplier<T>, Consumer<T> {
     }
 
     /**
-     * Drains the pool while performing an action on each remaining object.
-     * @param action The action to perform on each remaining object.
-     * @throws Exception A reduced exception of the action calls.
-     */
-    public void drain(UnsafeConsumer<T> action) throws Exception {
-        drain(action, Reducer.suppressor());
-    }
-
-    /**
-     * Drains the pool while performing an action on each remaining object.
-     * @param action The action to perform on each remaining object.
-     * @param exceptionReducer A reducer for the action calls' exceptions.
-     * @throws Exception A reduced exception of the action calls.
-     */
-    public void drain(UnsafeConsumer<T> action, Reducer<Exception> exceptionReducer) throws Exception {
-        Objects.requireNonNull(exceptionReducer, "Exception reducer is null.");
-        List<Exception> exceptions = new ArrayList<>(size());
-        Flow.acceptWhile(objectsQueue::poll, Objects.requireNonNull(action, "Action is null.")
-                .toHandledConsumer(exceptions::add)::accept, Objects::nonNull);
-        if (!exceptions.isEmpty())
-            Flow.throwIfNonNull(exceptionReducer.apply(exceptions));
-    }
-
-    /**
      * Clears the pool.
      */
     public void clear() {
         objectsQueue.clear();
+    }
+
+    /**
+     * A simple pool object usage template: Gets an object from the pool, uses it, and accepts it back into the pool.
+     * @param consumer The object consumer.
+     * @throws Exception If an attempt to get an object from the pool failed, or if the consumer threw an exception.
+     */
+    public void use(UnsafeConsumer<T> consumer) throws Exception {
+        T object = get();
+        try {
+            Objects.requireNonNull(consumer, "Consumer is null.").accept(object);
+        } finally {
+            accept(object);
+        }
     }
 }

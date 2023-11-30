@@ -77,6 +77,33 @@ public class Flow {
     }
 
     /**
+     * Produces values from the callable as long as they pass the predicate.
+     * @param callable The callable producing the values.
+     * @param predicate The predicate testing the values.
+     * @param <T> The values type.
+     * @return The first value that failed the predicate.
+     * @throws Exception Any exception thrown by the implementations.
+     */
+    public static <T> T getWhile(Callable<T> callable, Predicate<T> predicate) throws Exception {
+        Objects.requireNonNull(predicate, "Predicate is null.");
+        T value = Objects.requireNonNull(callable, "Callable is null.").call();
+        while (predicate.test(value))
+            value = callable.call();
+        return value;
+    }
+
+    /**
+     * Produces optional values from the callable as long as they are not present.
+     * @param callable The callable producing the optional values.
+     * @param <T> The values type.
+     * @return The first present optional.
+     * @throws Exception Any exception thrown by the callable.
+     */
+    public static <T> T getWhileNotPresent(Callable<Optional<T>> callable) throws Exception {
+        return getWhile(callable, Predicate.not(Optional::isPresent)).orElseThrow();
+    }
+
+    /**
      * Produces and accepts values into the consumer as long as they pass the predicate.
      * @param callable The callable producing the values.
      * @param consumer The values consumer.

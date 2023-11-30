@@ -5,6 +5,8 @@ import lab.drop.data.Data;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 class AutoCloseablePoolTest {
 
     private static class Resource implements AutoCloseable {
@@ -24,18 +26,17 @@ class AutoCloseablePoolTest {
     void initialSize() throws Exception {
         var additionalResources = Data.fill(10, Resource::new);
         AutoCloseablePool<Resource> pool;
-        try (var lazyPool = new LazyAutoCloseable<>(() -> new AutoCloseablePool<>(Resource::new, 5))) {
+        try (var lazyPool = new LazyAutoCloseable<>(() -> new AutoCloseablePool<>(Resource::new, 5, 0))) {
             pool = lazyPool.get();
             Assertions.assertEquals(5, pool.size());
-            Resource resRef;
-            try (var res = pool.get()) {
+            AtomicReference<Resource> used = new AtomicReference<>();
+            pool.use(res -> {
                 Assertions.assertEquals(4, pool.size());
                 res.use();
                 Assertions.assertEquals(1, res.usage);
-                pool.accept(res);
-                resRef = res;
-            }
-            Assertions.assertEquals(-1, resRef.usage);
+                used.set(res);
+            });
+            Assertions.assertEquals(1, used.get().usage);
             Assertions.assertEquals(5, pool.size());
             additionalResources.forEach(pool);
             Assertions.assertEquals(15, pool.size());
