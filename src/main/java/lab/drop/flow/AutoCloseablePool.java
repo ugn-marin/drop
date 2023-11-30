@@ -1,6 +1,7 @@
 package lab.drop.flow;
 
 import lab.drop.concurrent.Concurrent;
+import lab.drop.data.Data;
 import lab.drop.functional.Reducer;
 import lab.drop.functional.UnsafeConsumer;
 import lab.drop.functional.UnsafeSupplier;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
  * @param <T> The auto-closable type.
  */
 public class AutoCloseablePool<T extends AutoCloseable> extends ObjectPool<T> implements AutoCloseable {
+    private final int maximumSize;
     private final long ttl;
     private final Map<T, Long> objectsCreationTime = new ConcurrentHashMap<>();
 
@@ -23,10 +25,12 @@ public class AutoCloseablePool<T extends AutoCloseable> extends ObjectPool<T> im
      * depending on the rate of success. Unchecked exceptions from the supplier will be thrown.
      * @param supplier The objects supplier.
      * @param initialSize The initial count of objects in the pool.
+     * @param maximumSize The maximum count of objects in the pool.
      * @param ttl Objects' time to live in milliseconds. Non-positive means no limit.
      */
-    public AutoCloseablePool(UnsafeSupplier<T> supplier, int initialSize, long ttl) {
+    public AutoCloseablePool(UnsafeSupplier<T> supplier, int initialSize, int maximumSize, long ttl) {
         super(supplier, initialSize);
+        this.maximumSize = Data.requireRange(maximumSize, initialSize, null);
         this.ttl = ttl;
     }
 
@@ -38,7 +42,7 @@ public class AutoCloseablePool<T extends AutoCloseable> extends ObjectPool<T> im
      */
     @Override
     public T get() throws Exception {
-        var outdated = clearOutdated();
+        var outdated = removeOutdated();
         return Flow.getWhileNotPresent(() -> {
             T object = super.get();
             if (outdated.isEmpty())
@@ -52,7 +56,22 @@ public class AutoCloseablePool<T extends AutoCloseable> extends ObjectPool<T> im
         });
     }
 
-    private Optional<Set<T>> clearOutdated() {
+    /**
+     * Accepts an object back into the pool. Removes unused objects if the pool is full, and closes them asynchronously.
+     * @param object The object.
+     */
+    @Override
+    public void accept(T object) {
+        if (objectsCreationTime != null) {
+            synchronized (objectsCreationTime) {
+                while (size() >= maximumSize)
+                    remove(objectsQueue.poll());
+            }
+        }
+        super.accept(object);
+    }
+
+    private Optional<Set<T>> removeOutdated() {
         if (ttl <= 0)
             return Optional.empty();
         synchronized (objectsCreationTime) {
@@ -75,10 +94,12 @@ public class AutoCloseablePool<T extends AutoCloseable> extends ObjectPool<T> im
     @Override
     public void close() throws Exception {
         List<Exception> exceptions = new ArrayList<>(size());
-        UnsafeConsumer<T> action = AutoCloseable::close;
+        UnsafeConsumer<T> action = object -> {
+            objectsCreationTime.remove(object);
+            object.close();
+        };
         Flow.acceptWhile(objectsQueue::poll, action.toHandledConsumer(exceptions::add)::accept, Objects::nonNull);
         Flow.throwIfNonNull(Reducer.suppressor().apply(exceptions));
-        objectsCreationTime.clear();
     }
 
     /**
