@@ -18,16 +18,20 @@ public class UniquePredicate<T> implements Predicate<T> {
      */
     @Override
     public boolean test(T t) {
-        return t != null && hashCodes.add(t.hashCode());
+        return update(t, hashCodes::add);
     }
 
     /**
-     * Clears the argument's hash code from this predicate's cached hash codes. Returns true if existed in the cache.
+     * Removes the argument's hash code from this predicate's cached hash codes. Returns true if existed in the cache.
      * Use this method when the predicate is expected to encounter a large number of arguments: Clear the arguments as
      * soon as they're handled by the system and are sure not to be encountered again, to avoid running out of memory.
      */
-    public boolean clear(T t) {
-        return t != null && hashCodes.remove(t.hashCode());
+    public boolean remove(T t) {
+        return update(t, hashCodes::remove);
+    }
+
+    private boolean update(T t, Predicate<Integer> action) {
+        return t != null && action.test(t.hashCode());
     }
 
     /**
