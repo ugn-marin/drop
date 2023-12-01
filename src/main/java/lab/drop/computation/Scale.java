@@ -1,4 +1,4 @@
-package lab.drop.calc;
+package lab.drop.computation;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

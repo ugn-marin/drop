@@ -1,4 +1,4 @@
-package lab.drop.calc;
+package lab.drop.computation;
 
 import lab.drop.data.Data;
 import lab.drop.functional.Functional;
@@ -11,11 +11,11 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Various calculation utilities.
+ * Various computation utilities.
  */
-public class Calc {
+public class Computation {
 
-    private Calc() {}
+    private Computation() {}
 
     /**
      * Similar to Objects::hash or Arrays::hashCode, but returning a long hash.

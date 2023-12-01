@@ -102,7 +102,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
      */
     protected int getThreadIndex() throws UnsupportedOperationException {
         var threadName = Thread.currentThread().getName();
-        if (!threadsName.isCalculated() || !threadName.startsWith(threadsName.get()))
+        if (!threadsName.isComputed() || !threadName.startsWith(threadsName.get()))
             throw new UnsupportedOperationException(threadName + " is not a drop handling thread of " + getName() +
                     " - no index can be allocated.");
         return threadIndexes.computeIfAbsent(threadName, t -> threadIndexes.size() % concurrency);
@@ -183,7 +183,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
      * @param retryBuilder A stateless retry builder. A null builder sets the default behavior of no retries.
      */
     public void setRetryBuilder(Retry.Builder retryBuilder) {
-        if (cancelableSubmitter.isCalculated())
+        if (cancelableSubmitter.isComputed())
             throw new IllegalStateException("The pipeline worker is already running.");
         this.retryBuilder = retryBuilder;
     }

@@ -1,6 +1,6 @@
 package lab.drop.concurrent;
 
-import lab.drop.calc.Units;
+import lab.drop.computation.Units;
 import lab.drop.flow.Flow;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

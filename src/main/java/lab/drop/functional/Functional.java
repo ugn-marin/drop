@@ -51,7 +51,7 @@ public class Functional {
     }
 
     /**
-     * Wraps a callable implementation in a Supplier throwing sneaky. To define an <i>on exception</i> value calculation
+     * Wraps a callable implementation in a Supplier throwing sneaky. To define an <i>on exception</i> value computation
      * use the <code>orElse</code> method. To convert to a monadic value, use the <code>toMonadicSupplier</code> method.
      */
     public static <T> Supplier<T> toSneakySupplier(Callable<T> callable) {

@@ -1,7 +1,7 @@
 package lab.drop.pipeline;
 
-import lab.drop.calc.Scale;
-import lab.drop.calc.Units;
+import lab.drop.computation.Scale;
+import lab.drop.computation.Units;
 import lab.drop.concurrent.Concurrent;
 import lab.drop.concurrent.Interruptible;
 import lab.drop.data.Data;

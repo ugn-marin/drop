@@ -210,7 +210,7 @@ public class Flow {
     }
 
     /**
-     * Performs an unsafe operation on the lazy value if and only if calculated.
+     * Performs an unsafe operation on the lazy value if and only if computed.
      * @param lazy The lazy value supplier.
      * @param consumer The value consumer.
      * @param <T> The value type.
@@ -218,7 +218,7 @@ public class Flow {
      */
     public static <T> void maybe(Lazy<T> lazy, UnsafeConsumer<T> consumer) throws Exception {
         Objects.requireNonNull(consumer, "Consumer is null.");
-        if (Objects.requireNonNull(lazy, "Lazy is null.").isCalculated())
+        if (Objects.requireNonNull(lazy, "Lazy is null.").isComputed())
             consumer.accept(lazy.get());
     }
 

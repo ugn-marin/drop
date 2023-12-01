@@ -100,7 +100,7 @@ class PipelineChart {
             else if (element instanceof OutputWorker<?> ow)
                 addOutputPipe(x, y, ow, addColumn);
         }
-        if (addColumn.isCalculated())
+        if (addColumn.isComputed())
             next();
     }
 

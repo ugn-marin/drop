@@ -1,4 +1,4 @@
-package lab.drop.calc;
+package lab.drop.computation;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-class CalcTest {
+class ComputationTest {
 
     @Test
     void numericDescription() {
@@ -91,10 +91,10 @@ class CalcTest {
     void zip() {
         String text = "There's nothing special about this text, but repeating it will make it easy to zip.".repeat(999);
         byte[] utf8 = text.getBytes(StandardCharsets.UTF_8);
-        byte[] zipped = Calc.zip(utf8);
+        byte[] zipped = Computation.zip(utf8);
         System.out.printf("Zipped %s into %s%n", Units.Size.describe(utf8.length), Units.Size.describe(zipped.length));
         Assertions.assertEquals(389, zipped.length);
-        byte[] unzipped = Calc.unzip(zipped);
+        byte[] unzipped = Computation.unzip(zipped);
         Assertions.assertEquals(text, new String(unzipped, StandardCharsets.UTF_8));
     }
 

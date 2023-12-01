@@ -1,4 +1,4 @@
-package lab.drop.calc;
+package lab.drop.computation;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -58,7 +58,7 @@ public class U25 {
      * Returns the U25 instance from the objects' hash128.
      */
     public static U25 hash(Object... objects) {
-        return new U25(Calc.hash128(objects));
+        return new U25(Computation.hash128(objects));
     }
 
     /**

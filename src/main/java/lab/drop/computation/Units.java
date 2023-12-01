@@ -1,4 +1,4 @@
-package lab.drop.calc;
+package lab.drop.computation;
 
 import lab.drop.data.Data;
 import lab.drop.text.Text;
