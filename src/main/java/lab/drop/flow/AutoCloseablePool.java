@@ -6,9 +6,11 @@ import lab.drop.functional.Reducer;
 import lab.drop.functional.UnsafeConsumer;
 import lab.drop.functional.UnsafeSupplier;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * A simple object pool of auto-closeable objects.
@@ -21,16 +23,22 @@ public class AutoCloseablePool<T extends AutoCloseable> extends ObjectPool<T> im
 
     /**
      * Constructs an object pool with an initial set of objects. The pool will attempt to supply the required amount of
-     * objects, ignoring checked failures to do so. The ready pool size will be between 0 and the required size,
-     * depending on the rate of success. Unchecked exceptions from the supplier will be thrown.
+     * objects, ignoring checked failures to do so. The ready pool size will be between 0 and the required initial size,
+     * depending on the rate of success. Unchecked exceptions from the supplier will be thrown.<br>
+     * The pool maximum size will be enforced upon accepting objects back into the pool, whereas the time to live will
+     * be enforced upon getting objects from the pool. In both cases, objects that are removed from the pool will be
+     * closed asynchronously, ignoring potential errors. To catch all such errors or close objects synchronously, these
+     * limits can't be used. Instead, you may close the objects manually, or wait for the pool to close all remaining
+     * objects upon closing the pool itself, which does throw an exception if any of the close calls failed.
      * @param supplier The objects supplier.
      * @param initialSize The initial count of objects in the pool.
-     * @param maximumSize The maximum count of objects in the pool.
+     * @param maximumSize The maximum count of objects in the pool. Must be positive and at least as large as the
+     *                    initial size.
      * @param ttl Objects' time to live in milliseconds. Non-positive means no limit.
      */
     public AutoCloseablePool(UnsafeSupplier<T> supplier, int initialSize, int maximumSize, long ttl) {
         super(supplier, initialSize);
-        this.maximumSize = Data.requireRange(maximumSize, initialSize, null);
+        this.maximumSize = Data.requireRange(maximumSize, Math.max(initialSize, 1), null);
         this.ttl = ttl;
     }
 
@@ -42,49 +50,32 @@ public class AutoCloseablePool<T extends AutoCloseable> extends ObjectPool<T> im
      */
     @Override
     public T get() throws Exception {
-        var outdated = removeOutdated();
-        return Flow.getWhileNotPresent(() -> {
-            T object = super.get();
-            if (outdated.isEmpty())
-                return Optional.of(object);
-            if (outdated.get().contains(object)) {
-                objectsQueue.remove(object);
-                return Optional.empty();
-            }
-            objectsCreationTime.computeIfAbsent(object, any -> System.currentTimeMillis());
-            return Optional.of(object);
-        });
+        return Flow.getWhile(super::get, this::removeIfOutdated);
     }
 
     /**
-     * Accepts an object back into the pool. Removes unused objects if the pool is full, and closes them asynchronously.
+     * Accepts an object back into the pool. Removes an unused object if the pool is full, and closes it asynchronously.
      * @param object The object.
      */
     @Override
     public void accept(T object) {
-        if (objectsCreationTime != null) {
-            synchronized (objectsCreationTime) {
-                while (size() >= maximumSize)
-                    remove(objectsQueue.poll());
-            }
-        }
+        Flow.whileTrue(() -> maximumSize > 0 && size() >= maximumSize && remove(objectsQueue.poll()));
         super.accept(object);
     }
 
-    private Optional<Set<T>> removeOutdated() {
-        if (ttl <= 0)
-            return Optional.empty();
-        synchronized (objectsCreationTime) {
-            return Optional.of(Map.copyOf(objectsCreationTime).entrySet().stream()
-                    .filter(entry -> System.currentTimeMillis() - entry.getValue() > ttl).map(Map.Entry::getKey)
-                    .filter(objectsQueue::contains).peek(this::remove).collect(Collectors.toSet()));
-        }
+    private boolean removeIfOutdated(T object) {
+        if (ttl > 0 && System.currentTimeMillis() - objectsCreationTime.computeIfAbsent(object,
+                any -> System.currentTimeMillis()) > ttl)
+            return remove(object);
+        return false;
     }
 
-    private void remove(T object) {
+    private boolean remove(T object) {
+        if (object == null)
+            return false;
         objectsCreationTime.remove(object);
-        objectsQueue.remove(object);
         Concurrent.run(object::close);
+        return true;
     }
 
     /**

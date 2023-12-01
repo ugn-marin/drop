@@ -69,11 +69,22 @@ public class Flow {
      * Repeats a runnable call forever (or until throws a runtime exception or error).
      * @param runnable The runnable.
      */
-    @SuppressWarnings("InfiniteLoopStatement")
     public static void forever(Runnable runnable) {
         Objects.requireNonNull(runnable, "Runnable is null.");
-        while (true)
+        whileTrue(() -> {
             runnable.run();
+            return true;
+        });
+    }
+
+    /**
+     * Repeats a supplier call as long as it returns true.
+     * @param supplier The supplier.
+     */
+    @SuppressWarnings("StatementWithEmptyBody")
+    public static void whileTrue(Supplier<Boolean> supplier) {
+        Objects.requireNonNull(supplier, "Supplier is null.");
+        while (supplier.get());
     }
 
     /**

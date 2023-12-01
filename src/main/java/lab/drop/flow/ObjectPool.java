@@ -29,14 +29,15 @@ public class ObjectPool<T> implements UnsafeSupplier<T>, Consumer<T> {
 
     /**
      * Constructs an object pool with an initial set of objects. The pool will attempt to supply the required amount of
-     * objects, ignoring checked failures to do so. The ready pool size will be between 0 and the required size,
+     * objects, ignoring checked failures to do so. The ready pool size will be between 0 and the required initial size,
      * depending on the rate of success. Unchecked exceptions from the supplier will be thrown.
      * @param supplier The objects supplier.
-     * @param initialSize The initial count of objects in the pool.
+     * @param initialSize The required initial count of objects in the pool.
      */
     public ObjectPool(UnsafeSupplier<T> supplier, int initialSize) {
         this.supplier = Checked.supplier(supplier);
-        Stream.generate(this.supplier).limit(initialSize).flatMap(Checked::stream).forEach(this);
+        Stream.generate(this.supplier).limit(initialSize).flatMap(Checked::stream).filter(Objects::nonNull)
+                .forEach(this);
     }
 
     /**
