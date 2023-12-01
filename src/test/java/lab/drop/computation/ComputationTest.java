@@ -119,7 +119,7 @@ class ComputationTest {
         u25("00000000-0000-0001-ffff-ffff85382bea", "7sas223e75rze", U25.hash(-99999));
         u25("00000000-0000-0001-ffff-fff6707eafbb", "7sas21lh64uyj", U25.hash("Some object"));
         u25("00000000-4c03-f392-ffff-ffff856856c5", "2a3z97tr1xn2nw8tbd1", U25.hash("Some", null, 900));
-        u25("5d21302f-d1cc-b999-eef2-21f86b13a645", "5ihhv3tmia5eqck4ru1qt32v9", U25.hash("A", "little", "longer",
+        u25("5d21302f-d1cc-b999-eef2-21f8ab8c1ffb", "5ihhv3tmia5eqck4ru28p2bjv", U25.hash("A", "little", "longer",
                 "array", "of", "objects", 1, 2, 3, 4, 5, 6, 7, 8, 9, 0.1, true, false, -222.333,
                 U25.hash("not", "random")));
         println(Assertions.assertThrows(IllegalArgumentException.class, () ->
