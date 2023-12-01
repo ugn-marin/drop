@@ -54,7 +54,7 @@ final class Join<D> extends PipelineWorker implements OutputWorker<D> {
         boolean push = false;
         Drop<D> next = null;
         synchronized (remainingInputs) {
-            allInputs.computeIfAbsent(drop.index(), i -> new ArrayList<>()).add(drop);
+            allInputs.computeIfAbsent(index, i -> new ArrayList<>()).add(drop);
             if (!remainingInputs.containsKey(index)) {
                 remainingInputs.put(index, inputs.length - 1);
             } else {
