@@ -233,13 +233,16 @@ class PipelineGraph {
     private void generateDot() {
         dot.append("digraph {\n");
         dot.append("  rankdir=LR;\n");
-        pipelineWorkers.forEach(pw -> dot.append(String.format("  %d [label=\"%s\" shape=box style=%s];\n",
-                pw.hashCode(), pw, pw.isInternal() ? "rounded" : "\"rounded,filled\" fillcolor=lightsteelblue")));
-        var pipes = Data.sorted(Data.union(forks.stream().map(Fork::getOutputs).flatMap(Stream::of).collect(Collectors.toSet()),
-                joins.stream().map(Join::getInputs).flatMap(Stream::of).collect(Collectors.toSet()),
-                inputConsumers.keySet(), outputSuppliers.keySet()), Comparator.comparing(Objects::hashCode));
-        pipes.forEach(p -> dot.append(String.format("  %d [label=\"%s\" shape=hexagon];\n", p.hashCode(),
-                Text.remove(p.toString(), "-<", ">-"))));
+        dot.append("  concentrate=true;\n");
+        pipelineWorkers.forEach(pw -> dot.append(String.format(
+                "  %d [label=\"%s\" shape=box style=%s tooltip=\"%s\"];\n", pw.hashCode(), pw,
+                pw.isInternal() ? "rounded" : "\"rounded,filled\" fillcolor=lightsteelblue", getClassName(pw))));
+        var pipes = Data.sorted(Data.union(forks.stream().map(Fork::getOutputs).flatMap(Stream::of)
+                .collect(Collectors.toSet()), joins.stream().map(Join::getInputs).flatMap(Stream::of)
+                .collect(Collectors.toSet()), inputConsumers.keySet(), outputSuppliers.keySet()),
+                Comparator.comparing(Objects::hashCode));
+        pipes.forEach(pipe -> dot.append(String.format("  %d [label=\"%s\" shape=hexagon tooltip=\"%s\"];\n",
+                pipe.hashCode(), Text.remove(pipe.toString(), "-<", ">-"), getClassName(pipe))));
         pipes.forEach(pipe -> {
             if (outputSuppliers.containsKey(pipe))
                 outputSuppliers.get(pipe).forEach(ow -> dot.append(getEdge(ow, pipe)));
@@ -251,6 +254,11 @@ class PipelineGraph {
                     getEdge(input, join))));
         });
         dot.append("}\n");
+    }
+
+    private String getClassName(Object object) {
+        return Text.orElse(object.getClass().getSimpleName(), "Anonymous " +
+                object.getClass().getSuperclass().getSimpleName());
     }
 
     private String getEdge(Object from, Object to) {

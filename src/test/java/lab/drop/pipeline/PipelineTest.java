@@ -1478,6 +1478,7 @@ class PipelineTest {
         var wordsPrinter = new Printer<>(System.out, words, 1);
         var pipeline = builder.into(joinedAccum, wordsPrinter).build(PipelineWarning.UNBALANCED_FORK);
         System.out.println(pipeline);
+        System.out.println(pipeline.getDot());
         pipeline.run();
         assertEquals(full.length(), joinedAccum.getValue().length());
         assertEquals("""

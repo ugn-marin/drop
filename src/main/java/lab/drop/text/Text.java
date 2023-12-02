@@ -13,6 +13,16 @@ public class Text {
     private Text() {}
 
     /**
+     * Returns the text if it's not null and not blank, or the provided alternative otherwise.
+     * @param text The text.
+     * @param orElse The alternative.
+     * @return The resulting string.
+     */
+    public static String orElse(String text, String orElse) {
+        return text == null || text.isBlank() ? orElse : text;
+    }
+
+    /**
      * Constructs a strings array containing the result of <code>toString</code> for each non-null array member.
      * @param array The array.
      * @param <T> The members type.
