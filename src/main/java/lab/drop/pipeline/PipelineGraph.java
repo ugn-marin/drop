@@ -14,20 +14,23 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class PipelineChart {
+class PipelineGraph {
     private final List<PipelineWorker> pipelineWorkers;
     private final SupplyPipe<?> supplyPipe;
     private final Matrix<Object> matrix = new Matrix<>();
     private final Set<PipelineWarning> warnings = new LinkedHashSet<>(1);
     private final Map<Pipe<?>, List<OutputWorker<?>>> outputSuppliers = new HashMap<>();
     private final Map<Pipe<?>, List<InputWorker<?>>> inputConsumers = new HashMap<>();
-    private Set<Fork<?>> forks;
-    private Set<Join<?>> joins;
-    private Matrix<PipelineComponentMonitoring> componentsMonitoringMatrix = new Matrix<>();
+    private final Set<Fork<?>> forks;
+    private final Set<Join<?>> joins;
+    private final StringBuilder dot = new StringBuilder();
+    private Matrix<PipelineComponentMonitoring> componentsMonitoringMatrix;
 
-    PipelineChart(List<PipelineWorker> pipelineWorkers, SupplyPipe<?> supplyPipe) {
+    PipelineGraph(List<PipelineWorker> pipelineWorkers, SupplyPipe<?> supplyPipe) {
         this.pipelineWorkers = pipelineWorkers;
         this.supplyPipe = supplyPipe;
+        forks = Data.instancesOf(pipelineWorkers, Fork.class);
+        joins = Data.instancesOf(pipelineWorkers, Join.class);
         classifyComponents();
         var inputPipes = Functional.union(inputConsumers.keySet().stream(), joins.stream().map(Join::getInputs)
                 .flatMap(Stream::of)).collect(Collectors.toSet());
@@ -51,6 +54,7 @@ class PipelineChart {
             if (!pipelineWorkers.stream().allMatch(matrix::contains))
                 warnings.add(PipelineWarning.DISCOVERY);
         }
+        generateDot();
     }
 
     private void classifyComponents() {
@@ -67,11 +71,9 @@ class PipelineChart {
         Set<InputWorker<?>> inputWorkers = Data.instancesOf(pipelineWorkers, InputWorker.class);
         inputWorkers.forEach(iw -> inputConsumers.compute(iw.getInput(),
                 (pipe, workers) -> workers == null ? new ArrayList<>(List.of(iw)) : addSorted(workers, iw)));
-        forks = Data.instancesOf(pipelineWorkers, Fork.class);
         if (forks.stream().anyMatch(f -> Stream.of(f.getOutputs()).map(Pipe::getBaseCapacity)
                 .collect(Collectors.toSet()).size() > 1))
             warnings.add(PipelineWarning.UNBALANCED_FORK);
-        joins = Data.instancesOf(pipelineWorkers, Join.class);
     }
 
     private <T> List<T> addSorted(List<T> workers, T worker) {
@@ -228,10 +230,41 @@ class PipelineChart {
         return componentsMonitoringMatrix != null ? Matrix.unmodifiableCopy(componentsMonitoringMatrix) : null;
     }
 
+    private void generateDot() {
+        dot.append("digraph {\n");
+        dot.append("  rankdir=LR;\n");
+        pipelineWorkers.forEach(pw -> dot.append(String.format("  %d [label=\"%s\" shape=box style=%s];\n",
+                pw.hashCode(), pw, pw.isInternal() ? "rounded" : "\"rounded,filled\" fillcolor=lightsteelblue")));
+        var pipes = Data.sorted(Data.union(forks.stream().map(Fork::getOutputs).flatMap(Stream::of).collect(Collectors.toSet()),
+                joins.stream().map(Join::getInputs).flatMap(Stream::of).collect(Collectors.toSet()),
+                inputConsumers.keySet(), outputSuppliers.keySet()), Comparator.comparing(Objects::hashCode));
+        pipes.forEach(p -> dot.append(String.format("  %d [label=\"%s\" shape=hexagon];\n", p.hashCode(),
+                Text.remove(p.toString(), "-<", ">-"))));
+        pipes.forEach(pipe -> {
+            if (outputSuppliers.containsKey(pipe))
+                outputSuppliers.get(pipe).forEach(ow -> dot.append(getEdge(ow, pipe)));
+            if (inputConsumers.containsKey(pipe))
+                inputConsumers.get(pipe).forEach(iw -> dot.append(getEdge(pipe, iw)));
+            forks.forEach(fork -> Stream.of(fork.getOutputs()).filter(pipe::equals).forEach(output -> dot.append(
+                    getEdge(fork, output))));
+            joins.forEach(join -> Stream.of(join.getInputs()).filter(pipe::equals).forEach(input -> dot.append(
+                    getEdge(input, join))));
+        });
+        dot.append("}\n");
+    }
+
+    private String getEdge(Object from, Object to) {
+        return String.format("  %d -> %d [arrowhead=onormal];\n", from.hashCode(), to.hashCode());
+    }
+
+    String getDot() {
+        return dot.toString();
+    }
+
     @Override
     public String toString() {
         if (matrix.isEmpty())
-            return "No chart available.";
+            return "No graph available.";
         StringBuilder sb = new StringBuilder();
         matrix.toString().lines().forEach(line -> {
             StringBuilder lineSB = new StringBuilder(line);

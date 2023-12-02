@@ -1,5 +1,6 @@
 package lab.drop.pipeline;
 
+import lab.drop.concurrent.Lazy;
 import lab.drop.data.Data;
 import lab.drop.data.Matrix;
 import lab.drop.flow.Flow;
@@ -33,6 +34,7 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
     private final String simpleName;
     private final String string;
     private final Matrix<PipelineComponentMonitoring> componentsMonitoringMatrix;
+    private final Lazy<String> dot;
 
     /**
      * Constructs a builder of a closed pipeline, and attaches the suppliers provided.
@@ -65,9 +67,9 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
         simpleName = isOpen ? "Open pipeline" : "Pipeline";
         StringBuilder sb = new StringBuilder(String.format("%s of %d workers on %d working threads:\n", simpleName,
                 externalWorkers.size(), getConcurrency()));
-        var pipelineChart = new PipelineChart(pipelineWorkers, supplyPipe);
-        sb.append(pipelineChart);
-        pipelineWarnings = pipelineChart.getWarnings();
+        var pipelineGraph = new PipelineGraph(pipelineWorkers, supplyPipe);
+        sb.append(pipelineGraph);
+        pipelineWarnings = pipelineGraph.getWarnings();
         var unexpectedWarnings = pipelineWarnings.stream().filter(Predicate.not(allowedWarnings::contains))
                 .collect(Collectors.toSet());
         if (!unexpectedWarnings.isEmpty())
@@ -75,7 +77,8 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
         for (var warning : pipelineWarnings)
             sb.append("\n").append("Warning: ").append(warning.getDescription());
         string = sb.toString();
-        componentsMonitoringMatrix = pipelineChart.getComponentsMonitoringMatrix();
+        componentsMonitoringMatrix = pipelineGraph.getComponentsMonitoringMatrix();
+        dot = new Lazy<>(pipelineGraph::getDot);
     }
 
     /**
@@ -212,7 +215,14 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
      */
     public Set<InputWorker<?>> getBottlenecks() {
         return Data.<InputWorker<?>>instancesOf(externalWorkers, InputWorker.class).stream()
-                .filter(iw -> iw.getInput().getAverageLoad() > 0.95).collect(Collectors.toSet());
+                .filter(iw -> iw.getInput().getAverageLoad() > 0.95).collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Returns a DOT representation of the pipeline graph.
+     */
+    public String getDot() {
+        return dot.get();
     }
 
     @Override

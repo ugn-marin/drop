@@ -52,7 +52,7 @@ public class Data {
     public static <T> Set<T> instancesOf(Collection<?> objects, Class<?> type) {
         Objects.requireNonNull(type, "Type is null.");
         return Objects.requireNonNull(objects, "Collection is null.").stream().filter(type::isInstance)
-                .map(Functional::<T>cast).collect(Collectors.toSet());
+                .map(Functional::<T>cast).collect(Collectors.toUnmodifiableSet());
     }
 
     /**
@@ -247,6 +247,39 @@ public class Data {
      */
     public static <T> List<T> unmodifiableCopy(List<T> list) {
         return Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(list, "List is null.")));
+    }
+
+    /**
+     * Returns a union set of elements from the sets passed.
+     * @param sets An array of sets.
+     * @param <T> The sets elements type.
+     * @return A union set of elements from the sets.
+     */
+    @SafeVarargs
+    public static <T> Set<T> union(Set<T>... sets) {
+        return Stream.of(requireFull(sets)).flatMap(Set::stream).collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Returns a sorted set of the elements in the set passed.
+     * @param set The set.
+     * @param <T> The set elements type.
+     * @return A sorted set of the elements in the set passed.
+     */
+    public static <T extends Comparable<T>> Set<T> sorted(Set<T> set) {
+        return sorted(set, Comparator.naturalOrder());
+    }
+
+    /**
+     * Returns a sorted set of the elements in the set passed.
+     * @param set The set.
+     * @param comparator The comparator to sort by.
+     * @param <T> The set elements type.
+     * @return A sorted set of the elements in the set passed.
+     */
+    public static <T> Set<T> sorted(Set<T> set, Comparator<T> comparator) {
+        return Collections.unmodifiableSet(new LinkedHashSet<>(Objects.requireNonNull(set, "Set is null.").stream()
+                .sorted(Objects.requireNonNull(comparator, "Comparator is null.")).toList()));
     }
 
     /**

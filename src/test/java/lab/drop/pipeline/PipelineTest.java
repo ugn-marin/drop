@@ -227,7 +227,7 @@ class PipelineTest {
     }
 
     @Test
-    void chart_disconnected() {
+    void graph_disconnected() {
         try {
             Pipelines.direct(Pipelines.supplier(new SupplyPipe<>(1), () -> null),
                     Pipelines.consumer(new ScopePipe<>(1), (UnsafeConsumer<Integer>) x -> {}));
@@ -240,7 +240,7 @@ class PipelineTest {
     }
 
     @Test
-    void chart_cycle() {
+    void graph_cycle() {
         var supplyPipe = new SupplyPipe<Character>(5);
         try {
             Pipeline.from(new CharSupplier(abc, supplyPipe, 1))
