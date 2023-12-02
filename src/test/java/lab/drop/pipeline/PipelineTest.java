@@ -975,6 +975,7 @@ class PipelineTest {
         var transformer = new WordsTransformer(supplier.getOutput(), new SupplyPipe<>(1), 1);
         var pipeline = Pipeline.from(supplier).through(transformer).into(transformer.drain()).build();
         System.out.println(pipeline);
+        System.out.println(pipeline.getDot());
         pipeline.run();
         bottlenecks(pipeline);
     }
@@ -1028,6 +1029,7 @@ class PipelineTest {
         });
         var pipeline = Pipeline.from(supplyPipe).through(action).into(action.forward(supplyPipe)).build();
         System.out.println(pipeline);
+        System.out.println(pipeline.getDot());
         supplyPipe.push('a');
         try {
             pipeline.run();
@@ -1413,6 +1415,7 @@ class PipelineTest {
         var c2 = Pipelines.consumer(a3.getOutput(), AtomicInteger::incrementAndGet);
         var pipeline = builder.join(c1, a1, a2).into(c1, c2).build(PipelineWarning.UNBALANCED_FORK);
         System.out.println(pipeline);
+        System.out.println(pipeline.getDot());
         pipeline.run();
         assertEquals(5, counter.get());
         bottlenecks(pipeline);
@@ -1483,10 +1486,10 @@ class PipelineTest {
         assertEquals(full.length(), joinedAccum.getValue().length());
         assertEquals("""
                 Pipeline of 6 workers on 11 working threads:
-                CharSupplier -<SP:10>- fork +<IP:11>- F ----------------<IP:21>-+ join ----<IP:1>- CharAccumulator
-                                            +<IP:12>----------------------------+
-                                            +<IP:13>- A[6] -------------<IP:31>-+
-                                            +<IP:14>- WordsTransformer -<S?P:10>- Printer
+                CharSupplier -<*P:10>- fork +<-P:11>- F ----------------<-P:21>-+ join ----<-P:1>- CharAccumulator
+                                            +<-P:12>----------------------------+
+                                            +<-P:13>- A[6] -------------<-P:31>-+
+                                            +<-P:14>- WordsTransformer -<*?P:10>- Printer
                 Warning: Unbalanced fork detected.""", pipeline.toString());
         assertTrue(pipeline.getComponentsMonitoringMatrix().size().equals(9, 4));
         bottlenecks(pipeline);
@@ -1524,6 +1527,7 @@ class PipelineTest {
         int root = 3;
         var pipeline = tree(root);
         System.out.println(pipeline);
+        System.out.println(pipeline.getDot());
         Concurrent.run(pipeline);
         int times = 3;
         Flow.iterate(times, i -> Functional.sneaky(() -> pipeline.push('a')));

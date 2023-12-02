@@ -43,7 +43,7 @@ public class SupplyPipe<D> extends Pipe<D> implements SupplyGate<D> {
      * @param predicate The predicate by which to accept pushed drops into the pipe. Ignored if null.
      */
     public SupplyPipe(int baseCapacity, Predicate<D> predicate) {
-        this(baseCapacity, String.format("S%sP", predicate != null ? "?" : ""), predicate);
+        this(baseCapacity, String.format("*%sP", predicate != null ? "?" : ""), predicate);
     }
 
     /**

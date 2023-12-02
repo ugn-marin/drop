@@ -14,7 +14,7 @@ public class ScopePipe<D> extends Pipe<D> {
      *                     the pipe can reach <code>BC+N</code>.
      */
     public ScopePipe(int baseCapacity) {
-        this(baseCapacity, "IP");
+        this(baseCapacity, "-P");
     }
 
     /**
