@@ -149,7 +149,7 @@ public class Data {
     /**
      * Validates that the array is not null or empty, and none of its members is null. Equivalent to:
      * <pre>
-     * Sugar.requireNonEmpty(Sugar.requireNoneNull(objects))
+     * Data.requireNonEmpty(Data.requireNoneNull(objects))
      * </pre>
      * @param objects The array.
      * @param <T> The members type.
@@ -162,7 +162,7 @@ public class Data {
     /**
      * Validates that the list is not null or empty, and none of its members is null. Equivalent to:
      * <pre>
-     * Sugar.requireNonEmpty(Sugar.requireNoneNull(objects))
+     * Data.requireNonEmpty(Data.requireNoneNull(objects))
      * </pre>
      * @param objects The list.
      * @param <T> The members type.

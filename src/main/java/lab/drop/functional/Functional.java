@@ -86,7 +86,7 @@ public class Functional {
     /**
      * Runs a callable as a sneaky supplier. Equivalent to:
      * <pre>
-     * Sugar.toSneakySupplier(callable).get()
+     * Functional.toSneakySupplier(callable).get()
      * </pre>
      */
     public static <T> T sneaky(Callable<T> callable) {
