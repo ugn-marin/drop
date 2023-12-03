@@ -2,6 +2,7 @@ package lab.drop.concurrent;
 
 import lab.drop.data.Data;
 import lab.drop.flow.Flow;
+import lab.drop.functional.Functional;
 import lab.drop.functional.Reducer;
 import lab.drop.functional.UnsafeRunnable;
 
@@ -65,7 +66,7 @@ public class Concurrent {
      * @param tasks The tasks.
      */
     public static void run(Reducer<Exception> exceptionsReducer, UnsafeRunnable... tasks) throws Exception {
-        getAll(exceptionsReducer, Stream.of(Data.requireFull(tasks)).map(Concurrent::run).toArray(Future[]::new));
+        getAll(exceptionsReducer, Stream.of(Data.requireNoneNull(tasks)).map(Concurrent::run).toArray(Future[]::new));
     }
 
     /**
@@ -74,8 +75,18 @@ public class Concurrent {
      * @param futures The futures.
      */
     public static void getAll(Reducer<Exception> exceptionsReducer, Future<?>... futures) throws Exception {
-        Flow.runSteps(Stream.of(Data.requireFull(futures)).map(future -> (UnsafeRunnable) future::get).iterator(),
+        Flow.runSteps(Stream.of(Data.requireNoneNull(futures)).map(future -> (UnsafeRunnable) future::get).iterator(),
                 exceptionsReducer);
+    }
+
+    /**
+     * Cancels all futures with interruption. Returns the number of futures that were canceled.
+     * @param futures The futures.
+     * @return The number of futures that were canceled.
+     */
+    public static int cancelAll(Future<?>... futures) {
+        return (int) Stream.of(Data.requireNoneNull(futures)).map(future -> future.cancel(true))
+                .filter(Functional::is).count();
     }
 
     /**

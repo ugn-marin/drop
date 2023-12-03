@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.function.Predicate;
 
 /**
  * A wrapper for an executor service, submitting tasks that can all be canceled or interrupted at once.
@@ -61,8 +60,7 @@ public class CancelableSubmitter {
      */
     public int cancelSubmitted() {
         synchronized (submittedFutures) {
-            return (int) submittedFutures.values().stream().map(future -> future.cancel(true))
-                    .filter(Predicate.isEqual(true)).count();
+            return Concurrent.cancelAll(submittedFutures.values().toArray(Future[]::new));
         }
     }
 }

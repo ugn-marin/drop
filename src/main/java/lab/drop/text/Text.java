@@ -68,12 +68,14 @@ public class Text {
     }
 
     /**
-     * Returns the last <code>length</code> characters of the text.
+     * Returns the last <code>length</code> characters of the text. If the text is shorter than the length, the text is
+     * returned as is.
      * @param text The text.
      * @param length The length.
      * @return The resulting string.
      */
     public static String tail(String text, int length) {
-        return Objects.requireNonNull(text, "Text is null.").substring(Math.max(0, text.length() - length));
+        return Objects.requireNonNull(text, "Text is null.").isEmpty() ? text :
+                text.substring(Math.max(0, text.length() - length));
     }
 }
