@@ -76,6 +76,6 @@ public class Text {
      */
     public static String tail(String text, int length) {
         return Objects.requireNonNull(text, "Text is null.").isEmpty() ? text :
-                text.substring(Math.max(0, text.length() - length));
+                text.substring(Math.max(0, text.length() - Math.max(0, length)));
     }
 }

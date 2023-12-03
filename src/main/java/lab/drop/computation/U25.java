@@ -16,6 +16,8 @@ import java.util.UUID;
  * For serialization either use <code>uuid</code> or <code>toString</code>, not the U25 object.
  */
 public class U25 {
+    private static final int BYTES = 16;
+
     private final UUID uuid;
     private final String string;
 
@@ -24,10 +26,8 @@ public class U25 {
      */
     public U25(UUID uuid) {
         this.uuid = Objects.requireNonNull(uuid, "UUID is null.");
-        var buffer = ByteBuffer.allocate(16);
-        buffer.putLong(uuid.getMostSignificantBits());
-        buffer.putLong(uuid.getLeastSignificantBits());
-        string = new BigInteger(1, buffer.array()).toString(36);
+        string = new BigInteger(1, ByteBuffer.allocate(BYTES).putLong(uuid.getMostSignificantBits())
+                .putLong(uuid.getLeastSignificantBits()).array()).toString(Character.MAX_RADIX);
     }
 
     /**
@@ -40,11 +40,10 @@ public class U25 {
         if (Objects.requireNonNull(string, "String is null.").length() > 25)
             return new U25(UUID.fromString(string));
         try {
-            var bytes = new BigInteger(string, 36).toByteArray();
-            var buffer = ByteBuffer.allocate(16);
-            var length = Math.min(bytes.length, 16);
-            buffer.put(16 - length, bytes, bytes.length == 17 ? 1 : 0, length);
-            buffer.rewind();
+            var bytes = new BigInteger(string, Character.MAX_RADIX).toByteArray();
+            var length = Math.min(bytes.length, BYTES);
+            var buffer = ByteBuffer.allocate(BYTES).put(BYTES - length, bytes, Math.max(bytes.length, BYTES) - BYTES,
+                    length).rewind();
             var u25 = new U25(new UUID(buffer.getLong(), buffer.getLong()));
             if (string.length() == 25 && !string.equalsIgnoreCase(u25.string))
                 throw new NumberFormatException("Value is out of range.");
