@@ -758,6 +758,7 @@ class PipelineTest {
             assertTrue(result.exception() instanceof NumberFormatException);
             assertNull(result.orElse((Void) null));
             assertNull(result.checked().unwrap());
+            assertEquals(7, result.match(v -> 6, e -> 7).intValue());
             fail("Not failed");
         } catch (NumberFormatException e) {
             assertEquals("My failure message", e.getMessage());
