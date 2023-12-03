@@ -6,6 +6,7 @@ import lab.drop.functional.Functional;
 import lab.drop.functional.Reducer;
 import lab.drop.functional.UnsafeRunnable;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -26,6 +27,17 @@ public class Concurrent {
      */
     public static <T> Set<T> set() {
         return ConcurrentHashMap.newKeySet();
+    }
+
+    /**
+     * Creates a copy-or-write array list.
+     * @param elements Optional initial elements.
+     * @param <T> The elements type.
+     * @return The list.
+     */
+    @SafeVarargs
+    public static <T> List<T> list(T... elements) {
+        return new CopyOnWriteArrayList<>(elements);
     }
 
     /**
