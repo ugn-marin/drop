@@ -3,6 +3,7 @@ package lab.drop.functional;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * A wrapper of an Unsafe monad, only accepting a success result, or a failure on a checked exception.
@@ -24,6 +25,29 @@ public record Checked<T>(Unsafe<T> unsafe) implements Monad<T> {
     @Override
     public Exception exception() {
         return unsafe.exception();
+    }
+
+    /**
+     * Returns a checked unsafe instance computed according to monad result. If this is a wrapping of a failure result,
+     * the exception is preserved as is.
+     * @param mapper The value function to apply if this is a wrapping of a success result.
+     * @param <O> The output value type.
+     * @return The new checked unsafe instance.
+     */
+    public <O> Checked<O> map(Function<T, O> mapper) {
+        return unsafe.map(mapper).checked();
+    }
+
+    /**
+     * Returns a checked unsafe instance computed according to monad result. If this is a wrapping of a failure result
+     * and the failure operator returns a runtime exception, the exception is thrown.
+     * @param success The value function to apply if this is a wrapping of a success result.
+     * @param failure The exception function to apply if this is a wrapping of a failure result.
+     * @param <O> The output value type.
+     * @return The new checked unsafe instance.
+     */
+    public <O> Checked<O> map(Function<T, O> success, UnaryOperator<Exception> failure)  throws RuntimeException {
+        return unsafe.map(success, failure).checked();
     }
 
     /**

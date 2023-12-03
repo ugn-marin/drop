@@ -72,8 +72,8 @@ public interface Monad<T> {
 
     /**
      * Returns a value computed according to the monad result.
-     * @param success The value function if this is a wrapping of a success result.
-     * @param failure The value function if this is a wrapping of a failure result.
+     * @param success The value function to apply if this is a wrapping of a success result.
+     * @param failure The value function to apply if this is a wrapping of a failure result.
      * @param <O> The output value type.
      * @return The output value.
      */
