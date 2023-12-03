@@ -53,9 +53,8 @@ public record Unsafe<T>(T value, Exception exception) implements Monad<T> {
      * @return The new unsafe instance.
      */
     public <O> Unsafe<O> map(Function<T, O> success, UnaryOperator<Exception> failure) {
-        Objects.requireNonNull(success, "Success function is null.");
-        Objects.requireNonNull(failure, "Failure operator is null.");
-        return succeeded() ? success(success.apply(value())) : failure(failure.apply(exception()));
+        return match(Objects.requireNonNull(success, "Success function is null.").andThen(Unsafe::success),
+                Objects.requireNonNull(failure, "Failure operator is null.").andThen(Unsafe::failure));
     }
 
     /**

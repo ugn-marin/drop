@@ -67,7 +67,7 @@ public interface Monad<T> {
      */
     default T orElse(Supplier<T> supplier) {
         Objects.requireNonNull(supplier, "Supplier is null.");
-        return succeeded() ? value() : supplier.get();
+        return match(Function.identity(), e -> supplier.get());
     }
 
     /**
