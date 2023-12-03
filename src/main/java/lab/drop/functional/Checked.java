@@ -46,7 +46,7 @@ public record Checked<T>(Unsafe<T> unsafe) implements Monad<T> {
      * @param <O> The output value type.
      * @return The new checked unsafe instance.
      */
-    public <O> Checked<O> map(Function<T, O> success, UnaryOperator<Exception> failure)  throws RuntimeException {
+    public <O> Checked<O> map(Function<T, O> success, UnaryOperator<Exception> failure) throws RuntimeException {
         return unsafe.map(success, failure).checked();
     }
 
