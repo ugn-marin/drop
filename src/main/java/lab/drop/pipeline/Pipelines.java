@@ -1,6 +1,6 @@
 package lab.drop.pipeline;
 
-import lab.drop.functional.ConditionalConsumer;
+import lab.drop.functional.Split;
 import lab.drop.functional.UnsafeConsumer;
 import lab.drop.functional.UnsafeFunction;
 import lab.drop.functional.UnsafeSupplier;
@@ -108,13 +108,12 @@ public class Pipelines {
 
     /**
      * Constructs an open star pipeline forking from a supply pipe into the two consumers by the predicate result.
-     * @param conditionalConsumer A conditional consumer containing the predicate and respective consumers.
+     * @param split A conditional consumer containing the predicate and respective consumers.
      * @param <D> The drops type.
      * @return The pipeline.
      */
-    public static <D> Pipeline<D> split(ConditionalConsumer<D> conditionalConsumer) {
-        return split(conditionalConsumer.predicate(), conditionalConsumer.positive()::accept,
-                conditionalConsumer.negative()::accept);
+    public static <D> Pipeline<D> split(Split<D> split) {
+        return split(split.predicate(), split.positive()::accept, split.negative()::accept);
     }
 
     /**

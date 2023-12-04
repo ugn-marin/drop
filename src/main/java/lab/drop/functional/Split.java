@@ -10,15 +10,14 @@ import java.util.function.Predicate;
  * @param negative The acceptance logic for negative inputs.
  * @param <I> The input type.
  */
-public record ConditionalConsumer<I>(Predicate<I> predicate, Consumer<I> positive, Consumer<I> negative)
-        implements Consumer<I> {
+public record Split<I>(Predicate<I> predicate, Consumer<I> positive, Consumer<I> negative) implements Consumer<I> {
 
     /**
      * Constructs a conditional consumer, having an acceptance logic for positive outputs of the predicate only.
      * @param predicate The predicate to decide the acceptance.
      * @param positive The acceptance logic for positive inputs.
      */
-    public ConditionalConsumer(Predicate<I> predicate, Consumer<I> positive) {
+    public Split(Predicate<I> predicate, Consumer<I> positive) {
         this(predicate, positive, t -> {});
     }
 

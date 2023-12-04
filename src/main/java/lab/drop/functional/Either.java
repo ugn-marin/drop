@@ -11,7 +11,7 @@ import java.util.function.Predicate;
  * @param <I> The input type.
  * @param <O> The output type.
  */
-public record ConditionalFunction<I, O>(Predicate<I> predicate, Function<I, O> positive, Function<I, O> negative)
+public record Either<I, O>(Predicate<I> predicate, Function<I, O> positive, Function<I, O> negative)
         implements Function<I, O> {
 
     @Override
