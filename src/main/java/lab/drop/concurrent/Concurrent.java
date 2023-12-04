@@ -4,6 +4,7 @@ import lab.drop.data.Data;
 import lab.drop.flow.Flow;
 import lab.drop.functional.Functional;
 import lab.drop.functional.Reducer;
+import lab.drop.functional.Unsafe;
 import lab.drop.functional.UnsafeRunnable;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -57,6 +59,45 @@ public class Concurrent {
      */
     public static <T> Future<T> run(Callable<T> task) {
         return cachedPool.get().submit(task);
+    }
+
+    /**
+     * Submits an unsafe runnable into the cached pool. Returns a supplier of a monadic wrapper of the result.
+     * Equivalent to:
+     * <pre>
+     * Concurrent.monadic(Concurrent.run(task))
+     * </pre>
+     * @param task A task.
+     * @return A supplier of the task's monadic result.
+     */
+    public static Supplier<Unsafe<Void>> monadicRun(UnsafeRunnable task) {
+        return monadic(run(task));
+    }
+
+    /**
+     * Submits a callable into the cached pool. Returns a supplier of a monadic wrapper of the result. Equivalent to:
+     * <pre>
+     * Concurrent.monadic(Concurrent.run(task))
+     * </pre>
+     * @param task A task.
+     * @param <T> The task's result type.
+     * @return A supplier of the task's monadic result.
+     */
+    public static <T> Supplier<Unsafe<T>> monadicRun(Callable<T> task) {
+        return monadic(run(task));
+    }
+
+    /**
+     * Wraps the future <code>get</code> call in a Supplier returning a monadic wrapper of the result. Equivalent to:
+     * <pre>
+     * Functional.toMonadicSupplier(future::get)
+     * </pre>
+     * @param future A future.
+     * @param <T> The future's result type.
+     * @return A supplier of the future's result.
+     */
+    public static <T> Supplier<Unsafe<T>> monadic(Future<T> future) {
+        return Functional.toMonadicSupplier(future::get);
     }
 
     /**
