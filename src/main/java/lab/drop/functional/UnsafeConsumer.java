@@ -19,13 +19,7 @@ public interface UnsafeConsumer<I> {
      * Wraps this consumer implementation in a Consumer throwing sneaky.
      */
     default Consumer<I> toSneakyConsumer() {
-        return t -> {
-            try {
-                accept(t);
-            } catch (Exception e) {
-                throw Flow.sneaky(e);
-            }
-        };
+        return t -> Functional.sneaky(() -> accept(t));
     }
 
     /**
@@ -39,14 +33,10 @@ public interface UnsafeConsumer<I> {
      * Wraps this consumer implementation in a Function returning a monadic wrapper of the result.
      */
     default Function<I, Unsafe<Void>> toMonadicConsumer() {
-        return t -> {
-            try {
-                accept(t);
-                return Unsafe.success();
-            } catch (Exception e) {
-                return Unsafe.failure(e);
-            }
-        };
+        return t -> Flow.orElse(() -> {
+            accept(t);
+            return Unsafe.success();
+        }, Unsafe::<Void>failure).get();
     }
 
     /**
