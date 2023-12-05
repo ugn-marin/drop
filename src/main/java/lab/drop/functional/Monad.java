@@ -67,7 +67,15 @@ public interface Monad<T> {
      */
     default T orElse(Supplier<T> supplier) {
         Objects.requireNonNull(supplier, "Supplier is null.");
-        return match(Function.identity(), e -> supplier.get());
+        return orElse(e -> supplier.get());
+    }
+
+    /**
+     * Returns the value if this is a wrapping of a success result, or else the value computed by the function.
+     */
+    default T orElse(Function<Exception, T> onException) {
+        Objects.requireNonNull(onException, "Exception function is null.");
+        return match(Function.identity(), onException);
     }
 
     /**

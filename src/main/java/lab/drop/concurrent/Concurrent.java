@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -48,6 +49,7 @@ public class Concurrent {
      * @return The task's future.
      */
     public static Future<Void> run(UnsafeRunnable task) {
+        Objects.requireNonNull(task, "Task is null.");
         return run(task.toVoidCallable());
     }
 
@@ -58,6 +60,7 @@ public class Concurrent {
      * @return The task's future.
      */
     public static <T> Future<T> run(Callable<T> task) {
+        Objects.requireNonNull(task, "Task is null.");
         return cachedPool.get().submit(task);
     }
 
@@ -97,7 +100,34 @@ public class Concurrent {
      * @return A supplier of the future's result.
      */
     public static <T> Supplier<Unsafe<T>> monadic(Future<T> future) {
+        Objects.requireNonNull(future, "Future is null.");
         return Functional.toMonadicSupplier(future::get);
+    }
+
+    /**
+     * Submits a callable into the cached pool. Returns a supplier of the result if succeeded, or else the result of the
+     * exception supplier.
+     * @param task A task.
+     * @param onException A supplier of the result if the task failed.
+     * @param <T> The task's result type.
+     * @return A supplier of the task's result if returned, or else the supplier result.
+     */
+    public static <T> Supplier<T> orElse(Callable<T> task, Supplier<T> onException) {
+        Objects.requireNonNull(onException, "Exception supplier is null.");
+        return orElse(task, e -> onException.get());
+    }
+
+    /**
+     * Submits a callable into the cached pool. Returns a supplier of the result if succeeded, or else the result of the
+     * exception function.
+     * @param task A task.
+     * @param onException A function computing the result if the task failed.
+     * @param <T> The task's result type.
+     * @return A supplier of the task's result if returned, or else the function result.
+     */
+    public static <T> Supplier<T> orElse(Callable<T> task, Function<Exception, T> onException) {
+        Objects.requireNonNull(onException, "Exception function is null.");
+        return Functional.map(monadicRun(task), unsafe -> unsafe.orElse(onException));
     }
 
     /**
