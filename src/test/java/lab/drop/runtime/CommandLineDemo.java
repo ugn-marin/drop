@@ -5,9 +5,7 @@ import lab.drop.data.Data;
 public class CommandLineDemo {
 
     public static void main(String[] args) throws Exception {
-        var hostnameCommand = new CommandLine("hostname");
-        hostnameCommand.setNoPrints();
-        var hostname = hostnameCommand.call();
+        var hostname = new CommandLine("hostname").noPrints().call();
         System.out.printf("%s, %s%n", Data.first(hostname.getOutput()), hostname);
 
         System.out.println(new Ping("google.com").call());

@@ -51,6 +51,21 @@ public class Functional {
     }
 
     /**
+     * Returns a supplier of a value computed by the provided mapper function applied on the value from the provided
+     * supplier.
+     * @param supplier The supplier of the value to map.
+     * @param mapper The mapper function.
+     * @param <I> The input value type.
+     * @param <O> The output value type.
+     * @return The supplier of the mapped value.
+     */
+    public static <I, O> Supplier<O> map(Supplier<I> supplier, Function<I, O> mapper) {
+        Objects.requireNonNull(supplier, "Supplier is null.");
+        Objects.requireNonNull(mapper, "Mapper is null.");
+        return () -> mapper.apply(supplier.get());
+    }
+
+    /**
      * Wraps a callable implementation in a Supplier throwing sneaky. To define an <i>on exception</i> value computation
      * use the <code>orElse</code> method. To convert to a monadic value, use the <code>toMonadicSupplier</code> method.
      */
