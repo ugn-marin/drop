@@ -66,10 +66,8 @@ public class Computation {
      */
     public static byte[] unzip(byte[] bytes) {
         return Functional.sneaky(() -> {
-            try (var in = new ByteArrayInputStream(bytes)) {
-                try (var gzip = new GZIPInputStream(in)) {
-                    return gzip.readAllBytes();
-                }
+            try (var gzip = new GZIPInputStream(new ByteArrayInputStream(bytes))) {
+                return gzip.readAllBytes();
             }
         });
     }
