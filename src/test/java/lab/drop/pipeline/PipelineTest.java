@@ -87,9 +87,9 @@ class PipelineTest {
     @Test
     void constructor_definitions() {
         SupplyPipe<Object> pipe = new SupplyPipe<>(1);
-        PipelineWorker worker = Pipelines.supplier(pipe, () -> null);
+        PipelineWorker worker = Pipelines.supplier(pipe, Optional::empty);
         assertEquals(1, worker.getConcurrency());
-        worker = Pipelines.supplier(pipe, 5, () -> null);
+        worker = Pipelines.supplier(pipe, 5, Optional::empty);
         assertEquals(5, worker.getConcurrency());
         worker = Pipelines.function(pipe, pipe, x -> null);
         assertEquals(1, worker.getConcurrency());
@@ -116,7 +116,7 @@ class PipelineTest {
         }
         // Nulls
         try {
-            Pipelines.supplier(null, () -> null);
+            Pipelines.supplier(null, Optional::empty);
             fail();
         } catch (NullPointerException e) {
             System.out.println(e.getMessage());
@@ -166,15 +166,15 @@ class PipelineTest {
             System.out.println(e.getMessage());
         }
         try {
-            Pipeline.from(Pipelines.supplier(new SupplyPipe<>(1), () -> null),
-                    Pipelines.supplier(new SupplyPipe<>(1), () -> null));
+            Pipeline.from(Pipelines.supplier(new SupplyPipe<>(1), Optional::empty),
+                    Pipelines.supplier(new SupplyPipe<>(1), Optional::empty));
             fail();
         } catch (PipelineConfigurationException e) {
             System.out.println(e.getMessage());
         }
         // End of input
         try {
-            var pipeline = Pipelines.direct(() -> null, x -> {});
+            var pipeline = Pipelines.direct(Optional::empty, x -> {});
             System.out.println(pipeline);
             pipeline.run();
             pipeline.push(1);
@@ -201,7 +201,7 @@ class PipelineTest {
         }
         // Reuse
         try {
-            var pipeline = Pipelines.direct(() -> null, x -> {});
+            var pipeline = Pipelines.direct(Optional::empty, x -> {});
             System.out.println(pipeline);
             pipeline.run();
             pipeline.run();
@@ -229,7 +229,7 @@ class PipelineTest {
     @Test
     void graph_disconnected() {
         try {
-            Pipelines.direct(Pipelines.supplier(new SupplyPipe<>(1), () -> null),
+            Pipelines.direct(Pipelines.supplier(new SupplyPipe<>(1), Optional::empty),
                     Pipelines.consumer(new ScopePipe<>(1), (UnsafeConsumer<Integer>) x -> {}));
             fail();
         } catch (PipelineConfigurationException e) {
@@ -255,21 +255,21 @@ class PipelineTest {
 
     @Test
     void never_started_stop() {
-        var pipeline = Pipelines.direct(() -> null, x -> {});
+        var pipeline = Pipelines.direct(Optional::empty, x -> {});
         System.out.println(pipeline);
         pipeline.stop();
     }
 
     @Test
     void never_started_interrupt() {
-        var pipeline = Pipelines.direct(() -> null, x -> {});
+        var pipeline = Pipelines.direct(Optional::empty, x -> {});
         System.out.println(pipeline);
         pipeline.interrupt();
     }
 
     @Test
     void stop_then_run() throws Exception {
-        var pipeline = Pipelines.direct(() -> 1, x -> fail("Shouldn't run"));
+        var pipeline = Pipelines.direct(() -> Optional.of(1), x -> fail("Shouldn't run"));
         System.out.println(pipeline);
         pipeline.stop();
         pipeline.run();
@@ -278,7 +278,7 @@ class PipelineTest {
 
     @Test
     void interrupt_then_run() throws Exception {
-        var pipeline = Pipelines.direct(() -> 1, x -> fail("Shouldn't run"));
+        var pipeline = Pipelines.direct(() -> Optional.of(1), x -> fail("Shouldn't run"));
         System.out.println(pipeline);
         pipeline.interrupt();
         try {
@@ -755,7 +755,7 @@ class PipelineTest {
             var result = pipeline.get();
             assertTrue(result.failed());
             assertTrue(result.toOptional().isEmpty());
-            assertTrue(result.exception() instanceof NumberFormatException);
+            assertInstanceOf(NumberFormatException.class, result.exception());
             assertNull(result.orElse((Void) null));
             assertNull(result.checked().unwrap());
             assertEquals(7, result.match(v -> 6, e -> 7).intValue());
@@ -1279,7 +1279,7 @@ class PipelineTest {
             future.get();
             fail();
         } catch (ExecutionException e) {
-            assertTrue(e.getCause() instanceof NumberFormatException);
+            assertInstanceOf(NumberFormatException.class, e.getCause());
         } catch (NumberFormatException ignore) {}
     }
 

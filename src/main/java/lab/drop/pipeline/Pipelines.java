@@ -1,14 +1,8 @@
 package lab.drop.pipeline;
 
-import lab.drop.functional.Split;
-import lab.drop.functional.UnsafeConsumer;
-import lab.drop.functional.UnsafeFunction;
-import lab.drop.functional.UnsafeSupplier;
+import lab.drop.functional.*;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -47,7 +41,7 @@ public class Pipelines {
      * @param <D> The drops type.
      * @return The pipeline.
      */
-    public static <D> Pipeline<D> direct(UnsafeSupplier<D> get, UnsafeConsumer<D> accept) {
+    public static <D> Pipeline<D> direct(UnsafeSupplier<Optional<D>> get, UnsafeConsumer<D> accept) {
         SupplyPipe<D> supplyPipe = new SupplyPipe<>(1);
         return direct(supplier(supplyPipe, get), consumer(supplyPipe, accept));
     }
@@ -142,31 +136,31 @@ public class Pipelines {
     }
 
     /**
-     * Constructs a simple drop supplier of non-null elements.
+     * Constructs a simple drop supplier.
      * @param output The output pipe.
      * @param get The get implementation.
      * @param <O> The output drops type.
      * @return The supplier.
      */
-    public static <O> DropSupplier<O> supplier(SupplyPipe<O> output, UnsafeSupplier<O> get) {
+    public static <O> DropSupplier<O> supplier(SupplyPipe<O> output, UnsafeSupplier<Optional<O>> get) {
         return supplier(output, 1, get);
     }
 
     /**
-     * Constructs a simple multithreaded drop supplier of non-null elements.
+     * Constructs a simple multithreaded drop supplier.
      * @param output The output pipe.
      * @param concurrency The maximum parallel drops supplying to allow.
      * @param get The get implementation.
      * @param <O> The output drops type.
      * @return The supplier.
      */
-    public static <O> DropSupplier<O> supplier(SupplyPipe<O> output, int concurrency, UnsafeSupplier<O> get) {
+    public static <O> DropSupplier<O> supplier(SupplyPipe<O> output, int concurrency, UnsafeSupplier<Optional<O>> get) {
         Objects.requireNonNull(get, "Get supplier is required.");
         return new DropSupplier<>(output, concurrency) {
 
             @Override
             public Optional<O> get() throws Exception {
-                return Optional.ofNullable(get.get());
+                return get.get();
             }
         };
     }
@@ -179,8 +173,19 @@ public class Pipelines {
      * @return The supplier.
      */
     public static <O> DropSupplier<O> supplier(SupplyPipe<O> output, Stream<O> stream) {
-        var iterator = Objects.requireNonNull(stream, "Stream is null.").filter(Objects::nonNull).iterator();
-        return supplier(output, () -> iterator.hasNext() ? iterator.next() : null);
+        return supplier(output, Objects.requireNonNull(stream, "Stream is null.").filter(Objects::nonNull).iterator());
+    }
+
+    /**
+     * Constructs a simple drop supplier of the elements from the iterator. Null elements will fail the supplier with
+     * a NullPointerException.
+     * @param output The output pipe.
+     * @param iterator The iterator.
+     * @param <O> The output drops type.
+     * @return The supplier.
+     */
+    public static <O> DropSupplier<O> supplier(SupplyPipe<O> output, Iterator<O> iterator) {
+        return supplier(output, () -> Functional.next(iterator));
     }
 
     /**

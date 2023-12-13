@@ -3,6 +3,7 @@ package lab.drop.flow;
 import lab.drop.concurrent.InterruptedRuntimeException;
 import lab.drop.concurrent.Lazy;
 import lab.drop.data.Range;
+import lab.drop.functional.Functional;
 import lab.drop.functional.Reducer;
 import lab.drop.functional.UnsafeConsumer;
 import lab.drop.functional.UnsafeRunnable;
@@ -156,8 +157,7 @@ public class Flow {
     public static <T> void forEach(Stream<T> stream, UnsafeConsumer<T> consumer) throws Exception {
         Objects.requireNonNull(consumer, "Consumer is null.");
         var iterator = Objects.requireNonNull(stream, "Stream is null.").sequential().iterator();
-        while (iterator.hasNext())
-            consumer.accept(iterator.next());
+        acceptWhilePresent(() -> Functional.next(iterator), consumer);
     }
 
     /**

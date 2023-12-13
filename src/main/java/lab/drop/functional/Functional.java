@@ -51,6 +51,16 @@ public class Functional {
     }
 
     /**
+     * Returns an optional of the next element from the iterator if it exists, or an empty optional otherwise.
+     * @param iterator The iterator.
+     * @param <T> The element type.
+     * @return The optional of the next element.
+     */
+    public static <T> Optional<T> next(Iterator<T> iterator) {
+        return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
+    }
+
+    /**
      * Returns a supplier of a value computed by the provided mapper function applied on the value from the provided
      * supplier.
      * @param supplier The supplier of the value to map.
@@ -63,6 +73,19 @@ public class Functional {
         Objects.requireNonNull(supplier, "Supplier is null.");
         Objects.requireNonNull(mapper, "Mapper is null.");
         return () -> mapper.apply(supplier.get());
+    }
+
+    /**
+     * Returns a supplier of an optional of a nullable value from the provided supplier. Equivalent to:
+     * <pre>
+     * Functional.map(supplier, Optional::ofNullable)
+     * </pre>
+     * @param supplier The supplier of the value to map.
+     * @param <T> The value type.
+     * @return The supplier of the optional value.
+     */
+    public static <T> Supplier<Optional<T>> toOptionalSupplier(Supplier<T> supplier) {
+        return map(supplier, Optional::ofNullable);
     }
 
     /**
