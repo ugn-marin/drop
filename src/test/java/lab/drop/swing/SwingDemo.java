@@ -22,7 +22,6 @@ public class SwingDemo extends JFrame {
     private final JScrollPane scroll;
 
     public static void main(String[] args) {
-        setNimbusBlack(mix(Color.cyan, Color.blue));
         new SwingDemo().setVisible(true);
     }
 
@@ -88,7 +87,6 @@ public class SwingDemo extends JFrame {
             }
         };
         button2.setToolTipText("Cancel");
-        setButtonBaseColor(button2);
         button2.addActionListener(e -> play.set(!play.get()));
         panel.add(button2);
 
