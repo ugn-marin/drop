@@ -8,10 +8,14 @@ import lab.drop.functional.Reducer;
 import lab.drop.functional.UnsafeRunnable;
 import lab.drop.text.Text;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 /**
  * An OS command line process executor. Designed as a simplified ProcessBuilder wrapper, to be used directly or by
@@ -63,9 +67,9 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             outputLock.lockInterruptibly();
             try {
                 output.add(line);
-                var stream = line.isError() ? err : out;
-                if (stream != null)
-                    stream.println(line.getLine());
+                var consumer = line.isError() ? err : out;
+                if (consumer != null)
+                    consumer.accept(line.getLine());
             } finally {
                 outputLock.unlock();
             }
@@ -126,8 +130,8 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
 
     protected ProcessBuilder processBuilder;
     private final boolean collectOutput;
-    private PrintStream out;
-    private PrintStream err;
+    private Consumer<String> out;
+    private Consumer<String> err;
     private final ReentrantLock lock;
     private ReentrantLock outputLock;
     private Process process;
@@ -152,7 +156,7 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
         processBuilder = new ProcessBuilder(commandList);
         this.collectOutput = collectOutput;
         if (collectOutput) {
-            setOutputStreams(System.out, System.err);
+            setOutputConsumers(System.out::println, System.err::println);
             outputLock = new ReentrantLock(true);
         }
         lock = new ReentrantLock(true);
@@ -163,28 +167,32 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * @return This instance.
      */
     public CommandLine noPrints() {
-        setOutputStreams(null, null);
-        return this;
+        return setOutputConsumers(x -> {}, x -> {});
     }
 
     /**
-     * Sets the output streams printing the output lines collected. If a null stream is passed, the lines of the
-     * according stream will not be printed. In any case the streams do not affect the lines collection, unless printing
-     * throws an exception. The streams can be switched during the process runtime. The default streams are the standard
-     * system output and error streams. If the process has finished, or command line is not set to collect output, this
-     * method has no effect.
+     * Sets the consumers of the output lines collected. The consumers do not affect the lines collection, unless they
+     * throw an exception. The consumers can be switched during the process runtime. The default consumers are the
+     * standard system output and error streams. If the process has finished, or command line is not set to collect
+     * output, this method has no effect.
+     * @param out The consumer of the standard output lines.
+     * @param err The consumer of the error output lines.
+     * @return This instance.
      */
-    public void setOutputStreams(PrintStream out, PrintStream err) {
-        this.out = out;
-        this.err = err;
+    public CommandLine setOutputConsumers(Consumer<String> out, Consumer<String> err) {
+        this.out = Objects.requireNonNull(out, "OUT consumer is null.");
+        this.err = Objects.requireNonNull(err, "ERR consumer is null.");
+        return this;
     }
 
     /**
      * Sets the working directory of the process. Has no effect if already started.
      * @param directory The working directory of the process.
+     * @return This instance.
      */
-    public void setDirectory(File directory) {
+    public CommandLine setDirectory(File directory) {
         processBuilder.directory(directory);
+        return this;
     }
 
     /**
@@ -192,18 +200,21 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
      * Has no effect if already started.
      * @param key The key.
      * @param value The value.
+     * @return This instance.
      */
-    public void addEnvironment(String key, String value) {
-        processBuilder.environment().put(key, value);
+    public CommandLine addEnvironment(String key, String value) {
+        return addEnvironment(Map.of(key, value));
     }
 
     /**
      * Adds environment entries to the process, in addition to the environment it inherits from the current process. Has
      * no effect if already started.
      * @param environment The environment entries to add.
+     * @return This instance.
      */
-    public void addEnvironment(Map<String, String> environment) {
+    public CommandLine addEnvironment(Map<String, String> environment) {
         processBuilder.environment().putAll(Objects.requireNonNull(environment, "Environment map is null."));
+        return this;
     }
 
     @Override
