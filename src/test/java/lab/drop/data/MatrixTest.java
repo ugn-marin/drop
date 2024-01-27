@@ -1426,9 +1426,9 @@ class MatrixTest {
         matrix.addRow('a', 'b');
         matrix.addRow('c', 'd');
         assertUnmodifiable(() -> matrix.getRow(0).add('X'));
-        assertUnmodifiable(() -> matrix.getRows().get(0).add('X'));
+        assertUnmodifiable(() -> matrix.getRows().getFirst().add('X'));
         assertUnmodifiable(() -> matrix.getColumn(0).add('Y'));
-        assertUnmodifiable(() -> matrix.getColumns().get(0).add('Y'));
+        assertUnmodifiable(() -> matrix.getColumns().getFirst().add('Y'));
         Assertions.assertTrue(matrix.size().equals(2, 2));
         assertData("a,b|c,d", matrix);
     }

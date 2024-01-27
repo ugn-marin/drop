@@ -28,7 +28,7 @@ public class WordsTransformer extends DropTransformer<Character, String> {
 
     @Override
     protected Collection<String> getLastDrops() {
-        if (sb.length() > 0)
+        if (!sb.isEmpty())
             return nextWord(true);
         return null;
     }

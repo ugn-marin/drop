@@ -190,7 +190,7 @@ public class Data {
      * Returns the first member of the list. Throws appropriate exceptions if the list is null or empty.
      */
     public static <T> T first(List<T> objects) {
-        return requireNonEmpty(objects).get(0);
+        return requireNonEmpty(objects).getFirst();
     }
 
     /**
@@ -204,7 +204,7 @@ public class Data {
      * Removes and returns the first member of the list. Throws appropriate exceptions if the list is null or empty.
      */
     public static <T> T removeFirst(List<T> objects) {
-        return requireNonEmpty(objects).remove(0);
+        return requireNonEmpty(objects).removeFirst();
     }
 
     /**
@@ -289,15 +289,11 @@ public class Data {
      * @return A flat union array of the objects passed.
      */
     public static Object[] flat(Object... objects) {
-        return Stream.of(Objects.requireNonNull(objects, "Array is null.")).flatMap(o -> {
-            if (o instanceof Object[] array)
-                return Stream.of(array);
-            else if (o instanceof Iterable<?> iterable)
-                return StreamSupport.stream(iterable.spliterator(), false);
-            else if (o instanceof Stream<?> stream)
-                return stream;
-            else
-                return Stream.of(o);
+        return Stream.of(Objects.requireNonNull(objects, "Array is null.")).flatMap(o -> switch (o) {
+            case Object[] array -> Stream.of(array);
+            case Iterable<?> iterable -> StreamSupport.stream(iterable.spliterator(), false);
+            case Stream<?> stream -> stream;
+            case null, default -> Stream.of(o);
         }).toArray();
     }
 }

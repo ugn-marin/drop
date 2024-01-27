@@ -95,12 +95,12 @@ class PipelineGraph {
             if (element == null)
                 continue;
             int y = matrix.indexOf(element).getY();
-            if (element instanceof Pipe<?> pipe)
-                addPipeOutputs(x, y, pipe, addColumn);
-            else if (element instanceof Fork<?> fork)
-                addForkOutputs(x, y, fork, addColumn);
-            else if (element instanceof OutputWorker<?> ow)
-                addOutputPipe(x, y, ow, addColumn);
+            switch (element) {
+                case Pipe<?> pipe -> addPipeOutputs(x, y, pipe, addColumn);
+                case Fork<?> fork -> addForkOutputs(x, y, fork, addColumn);
+                case OutputWorker<?> ow -> addOutputPipe(x, y, ow, addColumn);
+                default -> {}
+            }
         }
         if (addColumn.isComputed())
             next();
