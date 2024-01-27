@@ -7,9 +7,9 @@ import java.util.UUID;
 
 /**
  * The Unique-25 is a wrapper of a UUID, producing an up-to-25 characters string representation, instead of the 36
- * characters representation of the UUID. This is achieved by converting the UUID value using base 36 rather than the
- * UUID string standard base 16. The resulting string will contain digits and alphabetic characters only. For use in
- * cases when a compact yet simple unique string identifier is needed, like a URL. For comparison, a base 64 encoded
+ * characters representation of the UUID. This is achieved by converting the UUID value using radix 36 rather than the
+ * UUID string standard radix 16. The resulting string will contain digits and alphabetic characters only. For use in
+ * cases when a compact yet simple unique string identifier is needed, like a URL. For comparison, a radix 64 encoded
  * representation of the UUID bytes takes 24 characters.<br>
  * The U25 is interchangeable with UUID, and the produced string is interchangeable with a U25 instance by using the
  * <code>fromString</code> method.<br>
@@ -83,7 +83,7 @@ public class U25 {
     }
 
     /**
-     * Returns the string representing this U25 object: A base 36 unsigned integer of the wrapped UUID.
+     * Returns the string representing this U25 object: A radix 36 unsigned integer of the wrapped UUID.
      */
     @Override
     public String toString() {
