@@ -225,7 +225,8 @@ public class CommandLine implements Callable<CommandLine.CommandLineResult> {
             long startNano = System.nanoTime();
             process = processBuilder.start();
             if (collectOutput)
-                Concurrent.run(Reducer.suppressor(), getOutputReader(false, result), getOutputReader(true, result));
+                Concurrent.virtual().run(Reducer.suppressor(), getOutputReader(false, result),
+                        getOutputReader(true, result));
             return result.returned(process.waitFor(), startNano);
         } finally {
             lock.unlock();

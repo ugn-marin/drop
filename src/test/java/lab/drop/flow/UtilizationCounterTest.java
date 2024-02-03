@@ -50,7 +50,7 @@ class UtilizationCounterTest {
     void flow1() throws Exception {
         var counter = new UtilizationCounter(3);
         counter.start();
-        var f1 = Concurrent.run(() -> {
+        var f1 = Concurrent.physical().run(() -> {
             counter.busy();
             Thread.sleep(50);
             counter.idle();
@@ -59,7 +59,7 @@ class UtilizationCounterTest {
             Thread.sleep(100);
             counter.idle();
         });
-        var f2 = Concurrent.run(() -> {
+        var f2 = Concurrent.physical().run(() -> {
             counter.busy();
             Thread.sleep(200);
             counter.idle();
@@ -82,19 +82,19 @@ class UtilizationCounterTest {
         counter.start();
         Assertions.assertEquals(0, counter.getCurrentUtilization());
         Thread.sleep(100);
-        var f1 = Concurrent.run(() -> {
+        var f1 = Concurrent.virtual().run(() -> {
             counter.busy();
             Thread.sleep(500);
             counter.idle();
         });
-        var f2 = Concurrent.run(() -> {
+        var f2 = Concurrent.virtual().run(() -> {
             Thread.sleep(100);
             counter.busy();
             Assertions.assertEquals(0.66, counter.getCurrentUtilization(), 0.01);
             Thread.sleep(400);
             counter.idle();
         });
-        var f3 = Concurrent.run(() -> {
+        var f3 = Concurrent.virtual().run(() -> {
             Thread.sleep(150);
             counter.busy();
             Assertions.assertEquals(1, counter.getCurrentUtilization());
@@ -112,19 +112,19 @@ class UtilizationCounterTest {
         counter.start();
         Assertions.assertEquals(0, counter.getCurrentUtilization());
         Thread.sleep(100);
-        var f1 = Concurrent.run(() -> {
+        var f1 = Concurrent.virtual().run(() -> {
             counter.busy();
             Thread.sleep(500);
             counter.idle();
         });
-        var f2 = Concurrent.run(() -> {
+        var f2 = Concurrent.virtual().run(() -> {
             Thread.sleep(100);
             counter.busy();
             Assertions.assertEquals(0.5, counter.getCurrentUtilization());
             Thread.sleep(400);
             counter.idle();
         });
-        var f3 = Concurrent.run(() -> {
+        var f3 = Concurrent.virtual().run(() -> {
             Thread.sleep(150);
             counter.busy();
             Assertions.assertEquals(0.75, counter.getCurrentUtilization());

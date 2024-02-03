@@ -4,7 +4,6 @@ import lab.drop.data.Data;
 import lab.drop.flow.Flow;
 import lab.drop.functional.Functional;
 import lab.drop.functional.Reducer;
-import lab.drop.functional.Unsafe;
 import lab.drop.functional.UnsafeRunnable;
 
 import java.util.List;
@@ -12,18 +11,30 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
  * Various concurrency utilities.
  */
 public class Concurrent {
-    private static final Lazy<ExecutorService> cachedPool = new Lazy<>(() -> Executors.newCachedThreadPool(
-            namedThreadFactory(Concurrent.class.getSimpleName(), true)));
+    private static final PhysicalExecutor physicalExecutor = new PhysicalExecutor();
+    private static final VirtualExecutor virtualExecutor = new VirtualExecutor();
 
     private Concurrent() {}
+
+    /**
+     * Returns the internal physical concurrent executor.
+     */
+    public static ConcurrentExecutor physical() {
+        return physicalExecutor;
+    }
+
+    /**
+     * Returns the internal virtual concurrent executor.
+     */
+    public static ConcurrentExecutor virtual() {
+        return virtualExecutor;
+    }
 
     /**
      * Creates a concurrent set.
@@ -41,115 +52,6 @@ public class Concurrent {
     @SafeVarargs
     public static <T> List<T> list(T... elements) {
         return new CopyOnWriteArrayList<>(elements);
-    }
-
-    /**
-     * Submits an unsafe runnable into the cached pool.
-     * @param task A task.
-     * @return The task's future.
-     */
-    public static Future<Void> run(UnsafeRunnable task) {
-        Objects.requireNonNull(task, "Task is null.");
-        return run(task.toVoidCallable());
-    }
-
-    /**
-     * Submits a callable into the cached pool.
-     * @param task A task.
-     * @param <T> The task's result type.
-     * @return The task's future.
-     */
-    public static <T> Future<T> run(Callable<T> task) {
-        Objects.requireNonNull(task, "Task is null.");
-        return cachedPool.get().submit(task);
-    }
-
-    /**
-     * Submits an unsafe runnable into the cached pool. Returns a supplier of a monadic wrapper of the result.
-     * Equivalent to:
-     * <pre>
-     * Concurrent.monadic(Concurrent.run(task))
-     * </pre>
-     * @param task A task.
-     * @return A supplier of the task's monadic result.
-     */
-    public static Supplier<Unsafe<Void>> monadicRun(UnsafeRunnable task) {
-        return monadic(run(task));
-    }
-
-    /**
-     * Submits a callable into the cached pool. Returns a supplier of a monadic wrapper of the result. Equivalent to:
-     * <pre>
-     * Concurrent.monadic(Concurrent.run(task))
-     * </pre>
-     * @param task A task.
-     * @param <T> The task's result type.
-     * @return A supplier of the task's monadic result.
-     */
-    public static <T> Supplier<Unsafe<T>> monadicRun(Callable<T> task) {
-        return monadic(run(task));
-    }
-
-    /**
-     * Wraps the future <code>get</code> call in a Supplier returning a monadic wrapper of the result. Equivalent to:
-     * <pre>
-     * Functional.toMonadicSupplier(future::get)
-     * </pre>
-     * @param future A future.
-     * @param <T> The future's result type.
-     * @return A supplier of the future's result.
-     */
-    public static <T> Supplier<Unsafe<T>> monadic(Future<T> future) {
-        Objects.requireNonNull(future, "Future is null.");
-        return Functional.toMonadicSupplier(future::get);
-    }
-
-    /**
-     * Submits a callable into the cached pool. Returns a supplier of the result if succeeded, or else the result of the
-     * exception supplier.
-     * @param task A task.
-     * @param onException A supplier of the result if the task failed.
-     * @param <T> The task's result type.
-     * @return A supplier of the task's result if returned, or else the supplier result.
-     */
-    public static <T> Supplier<T> orElse(Callable<T> task, Supplier<T> onException) {
-        Objects.requireNonNull(onException, "Exception supplier is null.");
-        return orElse(task, e -> onException.get());
-    }
-
-    /**
-     * Submits a callable into the cached pool. Returns a supplier of the result if succeeded, or else the result of the
-     * exception function.
-     * @param task A task.
-     * @param onException A function computing the result if the task failed.
-     * @param <T> The task's result type.
-     * @return A supplier of the task's result if returned, or else the function result.
-     */
-    public static <T> Supplier<T> orElse(Callable<T> task, Function<Exception, T> onException) {
-        Objects.requireNonNull(onException, "Exception function is null.");
-        return Functional.map(monadicRun(task), unsafe -> unsafe.orElse(onException));
-    }
-
-    /**
-     * Returns an unsafe runnable running the provided unsafe runnable tasks in the cached pool. Equivalent to:
-     * <pre>
-     * () -> Concurrent.run(exceptionsReducer, tasks)
-     * </pre>
-     * @param exceptionsReducer A reducer of the tasks exceptions list, returning the exception to throw.
-     * @param tasks The tasks.
-     * @return An unsafe runnable waiting for all tasks completion.
-     */
-    public static UnsafeRunnable merge(Reducer<Exception> exceptionsReducer, UnsafeRunnable... tasks) {
-        return () -> run(exceptionsReducer, tasks);
-    }
-
-    /**
-     * Submits several unsafe runnable tasks into the cached pool, waits for all tasks completion.
-     * @param exceptionsReducer A reducer of the tasks exceptions list, returning the exception to throw.
-     * @param tasks The tasks.
-     */
-    public static void run(Reducer<Exception> exceptionsReducer, UnsafeRunnable... tasks) throws Exception {
-        getAll(exceptionsReducer, Stream.of(Data.requireNoneNull(tasks)).map(Concurrent::run).toArray(Future[]::new));
     }
 
     /**

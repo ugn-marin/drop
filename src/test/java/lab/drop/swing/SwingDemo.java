@@ -5,7 +5,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static lab.drop.swing.Appearance.*;
+import static lab.drop.swing.Appearance.applyQualityRendering;
+import static lab.drop.swing.Appearance.mix;
 import static lab.drop.swing.ManualLayout.*;
 
 public class SwingDemo extends JFrame {

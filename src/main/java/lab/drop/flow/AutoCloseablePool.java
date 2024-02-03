@@ -74,7 +74,7 @@ public class AutoCloseablePool<T extends AutoCloseable> extends ObjectPool<T> im
         if (object == null)
             return false;
         objectsCreationTime.remove(object);
-        Concurrent.run(object::close);
+        Concurrent.virtual().run(object::close);
         return true;
     }
 

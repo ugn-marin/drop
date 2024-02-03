@@ -215,7 +215,7 @@ class PipelineTest {
             var pipeline = Pipeline.from(supplier).into(new DropConsumer<>(supplier.getOutput()) {
                 @Override
                 public void accept(Integer drop) throws Exception {
-                    Concurrent.run(this::getThreadIndex).get();
+                    Concurrent.virtual().run(this::getThreadIndex).get();
                 }
             }).build();
             System.out.println(pipeline);
@@ -464,7 +464,7 @@ class PipelineTest {
         };
         var pipeline = Pipelines.direct(charSupplier, charAccumulator);
         System.out.println(pipeline);
-        var future = Concurrent.run(pipeline);
+        var future = Concurrent.virtual().run(pipeline);
         sleep(200);
         assertTrue(supplyPipe.getTotalDrops() > mediumCapacity);
         future.get();
@@ -564,12 +564,12 @@ class PipelineTest {
         };
         var pipeline = Pipelines.direct(charSupplier, charAccumulator);
         System.out.println(pipeline);
-        Concurrent.run(() -> {
+        Concurrent.virtual().run(() -> {
             sleep(600);
             pipeline.interrupt();
         });
         try {
-            var future = Concurrent.run(pipeline);
+            var future = Concurrent.virtual().run(pipeline);
             sleep(50);
             assertEquals(PipelineWorkerState.Running, pipeline.getState());
             future.get();
@@ -785,7 +785,7 @@ class PipelineTest {
         var printer = new Printer<>(System.out, toPrint, 1);
         var pipeline = Pipelines.star(charSupplier, charAccumulator, printer);
         System.out.println(pipeline);
-        Concurrent.run(() -> {
+        Concurrent.virtual().run(() -> {
             sleep(600);
             pipeline.cancel(new NumberFormatException("My cancellation message"));
         });
@@ -815,7 +815,7 @@ class PipelineTest {
         var printer = new Printer<>(System.out, toPrint, 1);
         var pipeline = Pipelines.star(charSupplier, charAccumulator, printer);
         System.out.println(pipeline);
-        Concurrent.run(() -> {
+        Concurrent.virtual().run(() -> {
             sleep(600);
             printer.cancel(new NumberFormatException("My cancellation message"));
         });
@@ -837,7 +837,7 @@ class PipelineTest {
                 throw new NumberFormatException();
         })).build();
         System.out.println(pipeline);
-        var future = Concurrent.run(pipeline);
+        var future = Concurrent.virtual().run(pipeline);
         for (int i = 0; i < 10; i++)
             pipeline.push(i);
         pipeline.setEndOfInput();
@@ -860,8 +860,8 @@ class PipelineTest {
                 throw new NumberFormatException();
         })).build();
         System.out.println(pipeline);
-        var future = Concurrent.run(pipeline);
-        Concurrent.run(() -> {
+        var future = Concurrent.virtual().run(pipeline);
+        Concurrent.virtual().run(() -> {
             for (int i = 0; i < 10; i++)
                 pipeline.push(i);
             pipeline.setEndOfInput();
@@ -1210,7 +1210,7 @@ class PipelineTest {
         var accum = new CharAccumulator(supplyPipe, 1);
         var pipeline = Pipeline.from(supplyPipe).into(accum).build();
         System.out.println(pipeline);
-        Concurrent.run(pipeline);
+        Concurrent.virtual().run(pipeline);
         pipeline.pushAll(Functional.stream(five));
         pipeline.setEndOfInput();
         pipeline.await();
@@ -1274,7 +1274,7 @@ class PipelineTest {
                 }
             }).build();
             System.out.println(pipeline);
-            var future = Concurrent.run(pipeline);
+            var future = Concurrent.virtual().run(pipeline);
             supply.push(1);
             future.get();
             fail();
@@ -1301,7 +1301,7 @@ class PipelineTest {
         };
         final var pipeline = Pipelines.star(new SupplyPipe<>(largeCapacity), consumer, printer);
         System.out.println(pipeline);
-        Concurrent.run(() -> {
+        Concurrent.virtual().run(() -> {
             for (char c : full.toCharArray())
                 pipeline.push(c);
             pipeline.setEndOfInput();
@@ -1330,7 +1330,7 @@ class PipelineTest {
         };
         final var pipeline = Pipelines.star(new SupplyPipe<>(largeCapacity), consumer, printer);
         System.out.println(pipeline);
-        Concurrent.run(() -> {
+        Concurrent.virtual().run(() -> {
             for (char c : full.toCharArray())
                 pipeline.push(c);
             sleep(100);
@@ -1360,7 +1360,7 @@ class PipelineTest {
         };
         final var pipeline = Pipelines.star(new SupplyPipe<>(mediumCapacity), consumer, printer);
         System.out.println(pipeline);
-        Concurrent.run(() -> {
+        Concurrent.virtual().run(() -> {
             for (char c : full.toCharArray())
                 pipeline.push(c);
             sleep(100);
@@ -1388,7 +1388,7 @@ class PipelineTest {
         };
         final var pipeline = Pipelines.star(new SupplyPipe<>(largeCapacity), consumer, printer);
         System.out.println(pipeline);
-        Concurrent.run(() -> {
+        Concurrent.virtual().run(() -> {
             var sgc = pipeline.toConsumer();
             for (char c : full.toCharArray()) {
                 sgc.accept(c);
@@ -1428,7 +1428,7 @@ class PipelineTest {
         final var odd = new StringBuilder();
         final var pipeline = Pipelines.<Integer>split(new Split<>(n -> n % 2 == 0, even::append, odd::append));
         System.out.println(pipeline);
-        Concurrent.run(() -> {
+        Concurrent.virtual().run(() -> {
             for (int i = 0; i < 10; i++)
                 pipeline.push(i);
             pipeline.setEndOfInput();
@@ -1446,12 +1446,12 @@ class PipelineTest {
         var pipeline = Pipeline.from(supplyPipe).into(Pipelines.consumer(supplyPipe, concurrency,
                 i -> Interruptible.sleep(0))).build();
         System.out.println(pipeline);
-        Concurrent.run(pipeline);
+        Concurrent.virtual().run(pipeline);
         var tasks = Data.fill(concurrency, () -> (UnsafeRunnable) () -> {
             for (int i = 0; i < 10000; i++)
                 pipeline.push(i);
         });
-        Concurrent.run(Reducer.last(), tasks.toArray(UnsafeRunnable[]::new));
+        Concurrent.virtual().run(Reducer.last(), tasks.toArray(UnsafeRunnable[]::new));
         pipeline.setEndOfInput();
         pipeline.await();
         bottlenecks(pipeline);
@@ -1528,7 +1528,7 @@ class PipelineTest {
         var pipeline = tree(root);
         System.out.println(pipeline);
         System.out.println(pipeline.getDot());
-        Concurrent.run(pipeline);
+        Concurrent.virtual().run(pipeline);
         int times = 3;
         Flow.iterate(times, i -> Functional.sneaky(() -> pipeline.push('a')));
         pipeline.setEndOfInput();
@@ -1591,7 +1591,7 @@ class PipelineTest {
         int root = 4;
         var pipeline = treeJoin(root);
         System.out.println(pipeline);
-        Concurrent.run(pipeline);
+        Concurrent.virtual().run(pipeline);
         int times = 50;
         Flow.iterate(times, i -> Functional.sneaky(() -> pipeline.push('a')));
         pipeline.setEndOfInput();

@@ -7,7 +7,7 @@ import lab.drop.runtime.JVM;
 public class SwingDemoJVM {
 
     public static void main(String[] args) throws Exception {
-        Concurrent.getAll(Reducer.last(), Concurrent.run(new JVM(SwingDemo.class)),
-                Concurrent.run(new JVM(SwingDemo.class)));
+        Concurrent.getAll(Reducer.last(), Concurrent.physical().run(new JVM(SwingDemo.class)),
+                Concurrent.physical().run(new JVM(SwingDemo.class)));
     }
 }
