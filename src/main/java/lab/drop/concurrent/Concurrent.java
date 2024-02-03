@@ -17,8 +17,8 @@ import java.util.stream.Stream;
  * Various concurrency utilities.
  */
 public class Concurrent {
-    private static final PhysicalExecutor physicalExecutor = new PhysicalExecutor();
-    private static final VirtualExecutor virtualExecutor = new VirtualExecutor();
+    private static final ConcurrentExecutor physicalExecutor = new PhysicalExecutor();
+    private static final ConcurrentExecutor virtualExecutor = new VirtualExecutor();
 
     private Concurrent() {}
 
