@@ -3,11 +3,9 @@ package lab.drop.concurrent;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-class VirtualExecutor implements ConcurrentExecutor {
-    private final Lazy<ExecutorService> virtualPool = new Lazy<>(Executors::newVirtualThreadPerTaskExecutor);
+record VirtualExecutor(Lazy<ExecutorService> executor) implements ConcurrentExecutor {
 
-    @Override
-    public Lazy<ExecutorService> executor() {
-        return virtualPool;
+    VirtualExecutor() {
+        this(new Lazy<>(Executors::newVirtualThreadPerTaskExecutor));
     }
 }

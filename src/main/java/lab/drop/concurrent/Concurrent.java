@@ -23,14 +23,14 @@ public class Concurrent {
     private Concurrent() {}
 
     /**
-     * Returns the internal physical concurrent executor.
+     * Returns the internal physical threads concurrent executor.
      */
     public static ConcurrentExecutor physical() {
         return physicalExecutor;
     }
 
     /**
-     * Returns the internal virtual concurrent executor.
+     * Returns the internal virtual threads concurrent executor.
      */
     public static ConcurrentExecutor virtual() {
         return virtualExecutor;
