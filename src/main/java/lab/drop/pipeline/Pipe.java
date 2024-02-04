@@ -19,8 +19,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * @param <D> The drops type.
  */
 public abstract class Pipe<D> implements PipeMonitoring {
-    private static final long POLLING_TIMEOUT = 100;
-
     private final int baseCapacity;
     private final String name;
     private final ReentrantLock lock = new ReentrantLock(true);
@@ -97,6 +95,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
         if (drop == null)
             return;
         Flow.throwIfNonNull(endOfInput);
+        int interval = 1;
         while (true) {
             lock.lockInterruptibly();
             try {
@@ -106,7 +105,7 @@ public abstract class Pipe<D> implements PipeMonitoring {
                 lock.unlock();
             }
             synchronized (lock) {
-                lock.wait(POLLING_TIMEOUT);
+                lock.wait(interval++);
             }
         }
     }
@@ -129,8 +128,9 @@ public abstract class Pipe<D> implements PipeMonitoring {
     }
 
     private Drop<D> take() throws InterruptedException {
+        int interval = 1;
         while (endOfInput == null) {
-            Drop<D> drop = inOrderQueue.poll(POLLING_TIMEOUT, TimeUnit.MILLISECONDS);
+            Drop<D> drop = inOrderQueue.poll(interval++, TimeUnit.MILLISECONDS);
             if (drop != null)
                 return drop;
         }
