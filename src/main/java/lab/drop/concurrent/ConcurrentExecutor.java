@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 /**
  * An executor service tasks submitting and results handling wrapper.
  */
+@FunctionalInterface
 public interface ConcurrentExecutor {
 
     /**
