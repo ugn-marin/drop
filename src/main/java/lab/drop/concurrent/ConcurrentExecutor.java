@@ -23,7 +23,7 @@ public interface ConcurrentExecutor {
     /**
      * Returns the executor service.
      */
-    Lazy<ExecutorService> executor();
+    ExecutorService executor();
 
     /**
      * Submits an unsafe runnable into the cached pool.
@@ -31,8 +31,7 @@ public interface ConcurrentExecutor {
      * @return The task's future.
      */
     default Future<Void> run(UnsafeRunnable task) {
-        Objects.requireNonNull(task, "Task is null.");
-        return run(task.toVoidCallable());
+        return run(Objects.requireNonNull(task, "Task is null.").toVoidCallable());
     }
 
     /**
@@ -41,49 +40,35 @@ public interface ConcurrentExecutor {
      * @param <T> The task's result type.
      * @return The task's future.
      */
+    @SuppressWarnings("resource")
     default <T> Future<T> run(Callable<T> task) {
-        Objects.requireNonNull(task, "Task is null.");
-        return executor().get().submit(task);
+        return executor().submit(Objects.requireNonNull(task, "Task is null."));
     }
 
     /**
      * Submits an unsafe runnable into the cached pool. Returns a supplier of a monadic wrapper of the result.
      * Equivalent to:
      * <pre>
-     * monadic(run(task))
+     * Concurrent.monadic(run(task))
      * </pre>
      * @param task A task.
      * @return A supplier of the task's monadic result.
      */
     default Supplier<Unsafe<Void>> monadicRun(UnsafeRunnable task) {
-        return monadic(run(task));
+        return Concurrent.monadic(run(task));
     }
 
     /**
      * Submits a callable into the cached pool. Returns a supplier of a monadic wrapper of the result. Equivalent to:
      * <pre>
-     * monadic(run(task))
+     * Concurrent.monadic(run(task))
      * </pre>
      * @param task A task.
      * @param <T> The task's result type.
      * @return A supplier of the task's monadic result.
      */
     default <T> Supplier<Unsafe<T>> monadicRun(Callable<T> task) {
-        return monadic(run(task));
-    }
-
-    /**
-     * Wraps the future <code>get</code> call in a Supplier returning a monadic wrapper of the result. Equivalent to:
-     * <pre>
-     * Functional.toMonadicSupplier(future::get)
-     * </pre>
-     * @param future A future.
-     * @param <T> The future's result type.
-     * @return A supplier of the future's result.
-     */
-    default <T> Supplier<Unsafe<T>> monadic(Future<T> future) {
-        Objects.requireNonNull(future, "Future is null.");
-        return Functional.toMonadicSupplier(future::get);
+        return Concurrent.monadic(run(task));
     }
 
     /**

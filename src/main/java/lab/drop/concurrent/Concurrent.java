@@ -4,6 +4,7 @@ import lab.drop.data.Data;
 import lab.drop.flow.Flow;
 import lab.drop.functional.Functional;
 import lab.drop.functional.Reducer;
+import lab.drop.functional.Unsafe;
 import lab.drop.functional.UnsafeRunnable;
 
 import java.util.List;
@@ -11,14 +12,19 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
  * Various concurrency utilities.
  */
 public class Concurrent {
-    private static final ConcurrentExecutor physicalExecutor = new PhysicalExecutor();
-    private static final ConcurrentExecutor virtualExecutor = new VirtualExecutor();
+    private static final Lazy<ExecutorService> physicalExecutorService =
+            new Lazy<>(() -> Executors.newCachedThreadPool(Concurrent.namedThreadFactory("Physical", true)));
+    private static final Lazy<ExecutorService> virtualExecutorService =
+            new Lazy<>(Executors::newVirtualThreadPerTaskExecutor);
+    private static final ConcurrentExecutor physicalConcurrentExecutor = physicalExecutorService::get;
+    private static final ConcurrentExecutor virtualConcurrentExecutor = virtualExecutorService::get;
 
     private Concurrent() {}
 
@@ -26,14 +32,14 @@ public class Concurrent {
      * Returns the internal physical threads concurrent executor.
      */
     public static ConcurrentExecutor physical() {
-        return physicalExecutor;
+        return physicalConcurrentExecutor;
     }
 
     /**
      * Returns the internal virtual threads concurrent executor.
      */
     public static ConcurrentExecutor virtual() {
-        return virtualExecutor;
+        return virtualConcurrentExecutor;
     }
 
     /**
@@ -52,6 +58,20 @@ public class Concurrent {
     @SafeVarargs
     public static <T> List<T> list(T... elements) {
         return new CopyOnWriteArrayList<>(elements);
+    }
+
+    /**
+     * Wraps the future <code>get</code> call in a Supplier returning a monadic wrapper of the result. Equivalent to:
+     * <pre>
+     * Functional.toMonadicSupplier(future::get)
+     * </pre>
+     * @param future A future.
+     * @param <T> The future's result type.
+     * @return A supplier of the future's result.
+     */
+    public static <T> Supplier<Unsafe<T>> monadic(Future<T> future) {
+        Objects.requireNonNull(future, "Future is null.");
+        return Functional.toMonadicSupplier(future::get);
     }
 
     /**
