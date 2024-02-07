@@ -19,12 +19,10 @@ import java.util.stream.Stream;
  * Various concurrency utilities.
  */
 public class Concurrent {
-    private static final Lazy<ExecutorService> physicalExecutorService =
-            new Lazy<>(() -> Executors.newCachedThreadPool(Concurrent.namedThreadFactory("Physical", true)));
-    private static final Lazy<ExecutorService> virtualExecutorService =
-            new Lazy<>(Executors::newVirtualThreadPerTaskExecutor);
-    private static final ConcurrentExecutor physicalConcurrentExecutor = physicalExecutorService::get;
-    private static final ConcurrentExecutor virtualConcurrentExecutor = virtualExecutorService::get;
+    private static final Lazy<ConcurrentExecutor> physicalExecutor = new Lazy<>(() -> new ConcurrentExecutor(
+            Executors.newCachedThreadPool(Concurrent.namedThreadFactory("Physical", true))));
+    private static final Lazy<ConcurrentExecutor> virtualExecutor = new Lazy<>(() -> new ConcurrentExecutor(
+            Executors.newVirtualThreadPerTaskExecutor()));
 
     private Concurrent() {}
 
@@ -32,14 +30,14 @@ public class Concurrent {
      * Returns the internal physical threads concurrent executor.
      */
     public static ConcurrentExecutor physical() {
-        return physicalConcurrentExecutor;
+        return physicalExecutor.get();
     }
 
     /**
      * Returns the internal virtual threads concurrent executor.
      */
     public static ConcurrentExecutor virtual() {
-        return virtualConcurrentExecutor;
+        return virtualExecutor.get();
     }
 
     /**

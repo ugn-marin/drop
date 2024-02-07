@@ -16,21 +16,16 @@ import java.util.stream.Stream;
 
 /**
  * An executor service tasks submitting and results handling wrapper.
+ * @param executor The executor service.
  */
-@FunctionalInterface
-public interface ConcurrentExecutor {
-
-    /**
-     * Returns the executor service.
-     */
-    ExecutorService executor();
+public record ConcurrentExecutor(ExecutorService executor) {
 
     /**
      * Submits an unsafe runnable into the cached pool.
      * @param task A task.
      * @return The task's future.
      */
-    default Future<Void> run(UnsafeRunnable task) {
+    public Future<Void> run(UnsafeRunnable task) {
         return run(Objects.requireNonNull(task, "Task is null.").toVoidCallable());
     }
 
@@ -40,9 +35,8 @@ public interface ConcurrentExecutor {
      * @param <T> The task's result type.
      * @return The task's future.
      */
-    @SuppressWarnings("resource")
-    default <T> Future<T> run(Callable<T> task) {
-        return executor().submit(Objects.requireNonNull(task, "Task is null."));
+    public <T> Future<T> run(Callable<T> task) {
+        return executor.submit(Objects.requireNonNull(task, "Task is null."));
     }
 
     /**
@@ -54,7 +48,7 @@ public interface ConcurrentExecutor {
      * @param task A task.
      * @return A supplier of the task's monadic result.
      */
-    default Supplier<Unsafe<Void>> monadicRun(UnsafeRunnable task) {
+    public Supplier<Unsafe<Void>> monadicRun(UnsafeRunnable task) {
         return Concurrent.monadic(run(task));
     }
 
@@ -67,7 +61,7 @@ public interface ConcurrentExecutor {
      * @param <T> The task's result type.
      * @return A supplier of the task's monadic result.
      */
-    default <T> Supplier<Unsafe<T>> monadicRun(Callable<T> task) {
+    public <T> Supplier<Unsafe<T>> monadicRun(Callable<T> task) {
         return Concurrent.monadic(run(task));
     }
 
@@ -79,7 +73,7 @@ public interface ConcurrentExecutor {
      * @param <T> The task's result type.
      * @return A supplier of the task's result if returned, or else the supplier result.
      */
-    default <T> Supplier<T> orElse(Callable<T> task, Supplier<T> onException) {
+    public <T> Supplier<T> orElse(Callable<T> task, Supplier<T> onException) {
         Objects.requireNonNull(onException, "Exception supplier is null.");
         return orElse(task, e -> onException.get());
     }
@@ -92,7 +86,7 @@ public interface ConcurrentExecutor {
      * @param <T> The task's result type.
      * @return A supplier of the task's result if returned, or else the function result.
      */
-    default <T> Supplier<T> orElse(Callable<T> task, Function<Exception, T> onException) {
+    public <T> Supplier<T> orElse(Callable<T> task, Function<Exception, T> onException) {
         Objects.requireNonNull(onException, "Exception function is null.");
         return Functional.map(monadicRun(task), unsafe -> unsafe.orElse(onException));
     }
@@ -106,7 +100,7 @@ public interface ConcurrentExecutor {
      * @param tasks The tasks.
      * @return An unsafe runnable waiting for all tasks completion.
      */
-    default UnsafeRunnable merge(Reducer<Exception> exceptionsReducer, UnsafeRunnable... tasks) {
+    public UnsafeRunnable merge(Reducer<Exception> exceptionsReducer, UnsafeRunnable... tasks) {
         return () -> run(exceptionsReducer, tasks);
     }
 
@@ -115,7 +109,7 @@ public interface ConcurrentExecutor {
      * @param exceptionsReducer A reducer of the tasks exceptions list, returning the exception to throw.
      * @param tasks The tasks.
      */
-    default void run(Reducer<Exception> exceptionsReducer, UnsafeRunnable... tasks) throws Exception {
+    public void run(Reducer<Exception> exceptionsReducer, UnsafeRunnable... tasks) throws Exception {
         Concurrent.getAll(exceptionsReducer, Stream.of(Data.requireNoneNull(tasks)).map(this::run)
                 .toArray(Future[]::new));
     }
