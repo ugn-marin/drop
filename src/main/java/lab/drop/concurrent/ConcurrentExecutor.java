@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 public record ConcurrentExecutor(ExecutorService executor) {
 
     /**
-     * Submits an unsafe runnable into the cached pool.
+     * Submits an unsafe runnable into the executor.
      * @param task A task.
      * @return The task's future.
      */
@@ -30,7 +30,7 @@ public record ConcurrentExecutor(ExecutorService executor) {
     }
 
     /**
-     * Submits a callable into the cached pool.
+     * Submits a callable into the executor.
      * @param task A task.
      * @param <T> The task's result type.
      * @return The task's future.
@@ -40,7 +40,7 @@ public record ConcurrentExecutor(ExecutorService executor) {
     }
 
     /**
-     * Submits an unsafe runnable into the cached pool. Returns a supplier of a monadic wrapper of the result.
+     * Submits an unsafe runnable into the executor. Returns a supplier of a monadic wrapper of the result.
      * Equivalent to:
      * <pre>
      * Concurrent.monadic(run(task))
@@ -53,7 +53,7 @@ public record ConcurrentExecutor(ExecutorService executor) {
     }
 
     /**
-     * Submits a callable into the cached pool. Returns a supplier of a monadic wrapper of the result. Equivalent to:
+     * Submits a callable into the executor. Returns a supplier of a monadic wrapper of the result. Equivalent to:
      * <pre>
      * Concurrent.monadic(run(task))
      * </pre>
@@ -66,7 +66,7 @@ public record ConcurrentExecutor(ExecutorService executor) {
     }
 
     /**
-     * Submits a callable into the cached pool. Returns a supplier of the result if succeeded, or else the result of the
+     * Submits a callable into the executor. Returns a supplier of the result if succeeded, or else the result of the
      * exception supplier.
      * @param task A task.
      * @param onException A supplier of the result if the task failed.
@@ -79,7 +79,7 @@ public record ConcurrentExecutor(ExecutorService executor) {
     }
 
     /**
-     * Submits a callable into the cached pool. Returns a supplier of the result if succeeded, or else the result of the
+     * Submits a callable into the executor. Returns a supplier of the result if succeeded, or else the result of the
      * exception function.
      * @param task A task.
      * @param onException A function computing the result if the task failed.
@@ -92,7 +92,7 @@ public record ConcurrentExecutor(ExecutorService executor) {
     }
 
     /**
-     * Returns an unsafe runnable running the provided unsafe runnable tasks in the cached pool. Equivalent to:
+     * Returns an unsafe runnable running the provided unsafe runnable tasks in the executor. Equivalent to:
      * <pre>
      * () -> run(exceptionsReducer, tasks)
      * </pre>
@@ -105,7 +105,7 @@ public record ConcurrentExecutor(ExecutorService executor) {
     }
 
     /**
-     * Submits several unsafe runnable tasks into the cached pool, waits for all tasks completion.
+     * Submits several unsafe runnable tasks into the executor, waits for all tasks completion.
      * @param exceptionsReducer A reducer of the tasks exceptions list, returning the exception to throw.
      * @param tasks The tasks.
      */
