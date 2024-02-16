@@ -38,12 +38,14 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     private final Latch latch = new Latch();
     private final AtomicInteger canceledWork = new AtomicInteger();
     private UtilizationCounter utilizationCounter;
+    private boolean virtual;
     private Retry.Builder retryBuilder;
     private Throwable throwable;
     private PipelineWorkerState state = PipelineWorkerState.Ready;
 
     PipelineWorker(boolean internal, int concurrency) {
         this.internal = internal;
+        virtual = internal;
         this.concurrency = Data.requireRange(concurrency, internal ? null : 1, null);
         simpleName = new Lazy<>(() -> {
             Class<?> clazz = getClass();
@@ -65,7 +67,7 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
             return string;
         });
         threadsName = new Lazy<>(() -> String.format("PW %d (%s)", workerPoolNumber.incrementAndGet(), getName()));
-        executorService = new Lazy<>(() -> internal ? new BlockingThreadPoolExecutor(concurrency, true) :
+        executorService = new Lazy<>(() -> virtual ? new BlockingThreadPoolExecutor(concurrency, true) :
                 new BlockingThreadPoolExecutor(concurrency, threadsName.get()));
         cancelableSubmitter = new Lazy<>(() -> new CancelableSubmitter(executorService.get()));
         threadIndexes = new ConcurrentHashMap<>(concurrency);
@@ -180,13 +182,26 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
     }
 
     /**
+     * Defines the worker as virtual - all internal work will use virtual threads. Call prior to execution only. If the
+     * worker is internal or already defined as virtual, this method does nothing.
+     */
+    public void setVirtual() {
+        validateNotRunning();
+        virtual = true;
+    }
+
+    /**
      * Defines retry behavior to all internal work. Call prior to execution only.
      * @param retryBuilder A stateless retry builder. A null builder sets the default behavior of no retries.
      */
     public void setRetryBuilder(Retry.Builder retryBuilder) {
+        validateNotRunning();
+        this.retryBuilder = retryBuilder;
+    }
+
+    private void validateNotRunning() {
         if (cancelableSubmitter.isComputed())
             throw new IllegalStateException("The pipeline worker is already running.");
-        this.retryBuilder = retryBuilder;
     }
 
     Throwable getThrowable() {

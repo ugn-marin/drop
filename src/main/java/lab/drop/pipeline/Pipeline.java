@@ -82,12 +82,21 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
     }
 
     /**
-     * Returns the maximum number of auto-allocated threads that this pipeline's workers can use. That doesn't include
-     * the threads managing and joining the workers, and the various internal workers.
+     * Returns the maximum number of auto-allocated threads that this pipeline's workers can use, physical and virtual.
+     * That doesn't include the virtual threads managing and joining the workers, and the various internal workers.
      */
     @Override
     public int getConcurrency() {
         return externalWorkers.stream().mapToInt(PipelineWorker::getConcurrency).sum();
+    }
+
+    /**
+     * Defines the pipeline as virtual - all internal work will use virtual threads. Call prior to execution only. Any
+     * contained worker that is internal or already defined as virtual will not be affected by this method.
+     */
+    @Override
+    public void setVirtual() {
+        externalWorkers.forEach(PipelineWorker::setVirtual);
     }
 
     @Override
