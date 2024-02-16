@@ -28,7 +28,16 @@ public class BlockingThreadPoolExecutor extends ThreadPoolExecutor {
      * @param maximumPoolSize The maximum number of threads to allow in the pool.
      */
     public BlockingThreadPoolExecutor(int maximumPoolSize) {
-        this(maximumPoolSize, Executors.defaultThreadFactory());
+        this(maximumPoolSize, false);
+    }
+
+    /**
+     * Constructs a new blocking thread pool executor.
+     * @param maximumPoolSize The maximum number of threads to allow in the pool.
+     * @param virtual Whether to use virtual threads.
+     */
+    public BlockingThreadPoolExecutor(int maximumPoolSize, boolean virtual) {
+        this(maximumPoolSize, virtual ? Thread.ofVirtual().factory() : Executors.defaultThreadFactory());
     }
 
     /**

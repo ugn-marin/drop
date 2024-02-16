@@ -65,7 +65,8 @@ public abstract class PipelineWorker implements PipelineWorkerMonitoring, Unsafe
             return string;
         });
         threadsName = new Lazy<>(() -> String.format("PW %d (%s)", workerPoolNumber.incrementAndGet(), getName()));
-        executorService = new Lazy<>(() -> new BlockingThreadPoolExecutor(concurrency, threadsName.get()));
+        executorService = new Lazy<>(() -> internal ? new BlockingThreadPoolExecutor(concurrency, true) :
+                new BlockingThreadPoolExecutor(concurrency, threadsName.get()));
         cancelableSubmitter = new Lazy<>(() -> new CancelableSubmitter(executorService.get()));
         threadIndexes = new ConcurrentHashMap<>(concurrency);
         if (!internal)
