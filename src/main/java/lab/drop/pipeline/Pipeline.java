@@ -78,7 +78,7 @@ public final class Pipeline<S> extends PipelineWorker implements SupplyGate<S>, 
             sb.append("\n").append("Warning: ").append(warning.getDescription());
         string = sb.toString();
         componentsMonitoringMatrix = pipelineGraph.getComponentsMonitoringMatrix();
-        dot = new Lazy<>(pipelineGraph::getDot);
+        dot = pipelineGraph.getDot();
     }
 
     /**

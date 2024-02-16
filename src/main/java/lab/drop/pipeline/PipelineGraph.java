@@ -1,5 +1,6 @@
 package lab.drop.pipeline;
 
+import lab.drop.concurrent.Lazy;
 import lab.drop.concurrent.LazyRunnable;
 import lab.drop.data.Data;
 import lab.drop.data.Matrix;
@@ -23,8 +24,8 @@ class PipelineGraph {
     private final Map<Pipe<?>, List<InputWorker<?>>> inputConsumers = new HashMap<>();
     private final Set<Fork<?>> forks;
     private final Set<Join<?>> joins;
-    private final StringBuilder dot = new StringBuilder();
     private Matrix<PipelineComponentMonitoring> componentsMonitoringMatrix;
+    private final Lazy<String> dot = new Lazy<>(this::generateDot);
 
     PipelineGraph(List<PipelineWorker> pipelineWorkers, SupplyPipe<?> supplyPipe) {
         this.pipelineWorkers = pipelineWorkers;
@@ -230,30 +231,32 @@ class PipelineGraph {
         return componentsMonitoringMatrix != null ? Matrix.unmodifiableCopy(componentsMonitoringMatrix) : null;
     }
 
-    private void generateDot() {
-        dot.append("digraph {\n");
-        dot.append("  rankdir=LR;\n");
-        dot.append("  concentrate=true;\n");
-        pipelineWorkers.forEach(pw -> dot.append(String.format(
+    private String generateDot() {
+        var sb = new StringBuilder();
+        sb.append("digraph {\n");
+        sb.append("  rankdir=LR;\n");
+        sb.append("  concentrate=true;\n");
+        pipelineWorkers.forEach(pw -> sb.append(String.format(
                 "  %d [label=\"%s\" shape=box style=%s tooltip=\"%s\"];\n", pw.hashCode(), pw,
                 pw.isInternal() ? "rounded" : "\"rounded,filled\" fillcolor=lightsteelblue", getClassName(pw))));
         var pipes = Data.sorted(Data.union(forks.stream().map(Fork::getOutputs).flatMap(Stream::of)
                 .collect(Collectors.toSet()), joins.stream().map(Join::getInputs).flatMap(Stream::of)
                 .collect(Collectors.toSet()), inputConsumers.keySet(), outputSuppliers.keySet()),
                 Comparator.comparing(Objects::hashCode));
-        pipes.forEach(pipe -> dot.append(String.format("  %d [label=\"%s\" shape=hexagon tooltip=\"%s\"];\n",
+        pipes.forEach(pipe -> sb.append(String.format("  %d [label=\"%s\" shape=hexagon tooltip=\"%s\"];\n",
                 pipe.hashCode(), Text.remove(pipe.toString(), "-<", ">-"), getClassName(pipe))));
         pipes.forEach(pipe -> {
             if (outputSuppliers.containsKey(pipe))
-                outputSuppliers.get(pipe).forEach(ow -> dot.append(getEdge(ow, pipe)));
+                outputSuppliers.get(pipe).forEach(ow -> sb.append(getEdge(ow, pipe)));
             if (inputConsumers.containsKey(pipe))
-                inputConsumers.get(pipe).forEach(iw -> dot.append(getEdge(pipe, iw)));
-            forks.forEach(fork -> Stream.of(fork.getOutputs()).filter(pipe::equals).forEach(output -> dot.append(
+                inputConsumers.get(pipe).forEach(iw -> sb.append(getEdge(pipe, iw)));
+            forks.forEach(fork -> Stream.of(fork.getOutputs()).filter(pipe::equals).forEach(output -> sb.append(
                     getEdge(fork, output))));
-            joins.forEach(join -> Stream.of(join.getInputs()).filter(pipe::equals).forEach(input -> dot.append(
+            joins.forEach(join -> Stream.of(join.getInputs()).filter(pipe::equals).forEach(input -> sb.append(
                     getEdge(input, join))));
         });
-        dot.append("}\n");
+        sb.append("}\n");
+        return sb.toString();
     }
 
     private String getClassName(Object object) {
@@ -265,8 +268,8 @@ class PipelineGraph {
         return String.format("  %d -> %d [arrowhead=onormal];\n", from.hashCode(), to.hashCode());
     }
 
-    String getDot() {
-        return dot.toString();
+    Lazy<String> getDot() {
+        return dot;
     }
 
     @Override
