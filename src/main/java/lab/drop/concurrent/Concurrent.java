@@ -2,16 +2,15 @@ package lab.drop.concurrent;
 
 import lab.drop.data.Data;
 import lab.drop.flow.Flow;
-import lab.drop.functional.Functional;
-import lab.drop.functional.Reducer;
-import lab.drop.functional.Unsafe;
-import lab.drop.functional.UnsafeRunnable;
+import lab.drop.functional.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -88,6 +87,31 @@ public class Concurrent {
         Objects.requireNonNull(future, "Future is null.");
         Objects.requireNonNull(unit, "Time unit is null.");
         return Functional.toMonadicSupplier(() -> future.get(timeout, unit));
+    }
+
+    /**
+     * Wraps the future <code>get</code> call with a timeout in a Supplier returning a value computed according to the
+     * future result.
+     * @param future A future.
+     * @param timeout The maximum time to wait.
+     * @param unit The time unit of the timeout argument.
+     * @param success The value function to apply if the future succeeded.
+     * @param onFailure The value function to apply if the future failed.
+     * @param onCancellation The value function to apply if the future was canceled.
+     * @param onInterruption The value function to apply if the future was interrupted.
+     * @param onTimeout The value function to apply if the future timed out.
+     * @param <T> The future's result type.
+     * @param <O> The output value type.
+     * @return The supplier of the output value.
+     */
+    public static <T, O> Supplier<O> match(Future<T> future, long timeout, TimeUnit unit, Function<T, O> success,
+                                           Function<ExecutionException, O> onFailure,
+                                           Function<CancellationException, O> onCancellation,
+                                           Function<InterruptedException, O> onInterruption,
+                                           Function<TimeoutException, O> onTimeout) {
+        return Functional.map(monadic(future, timeout, unit), unsafe -> unsafe.match(success, new Converter<>(Map.of(
+                ExecutionException.class, onFailure, CancellationException.class, onCancellation,
+                InterruptedException.class, onInterruption, TimeoutException.class, onTimeout))));
     }
 
     /**
