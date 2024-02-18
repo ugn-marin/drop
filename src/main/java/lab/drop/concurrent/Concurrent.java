@@ -73,6 +73,24 @@ public class Concurrent {
     }
 
     /**
+     * Wraps the future <code>get</code> call with a timeout in a Supplier returning a monadic wrapper of the result.
+     * Equivalent to:
+     * <pre>
+     * Functional.toMonadicSupplier(() -> future.get(timeout, unit))
+     * </pre>
+     * @param future A future.
+     * @param timeout The maximum time to wait.
+     * @param unit The time unit of the timeout argument.
+     * @param <T> The future's result type.
+     * @return A supplier of the future's result.
+     */
+    public static <T> Supplier<Unsafe<T>> monadic(Future<T> future, long timeout, TimeUnit unit) {
+        Objects.requireNonNull(future, "Future is null.");
+        Objects.requireNonNull(unit, "Time unit is null.");
+        return Functional.toMonadicSupplier(() -> future.get(timeout, unit));
+    }
+
+    /**
      * Calls <code>get</code> for each future. In other words, waits if necessary for all futures' tasks completion.
      * @param exceptionsReducer A reducer of the futures exceptions list, returning the exception to throw.
      * @param futures The futures.
