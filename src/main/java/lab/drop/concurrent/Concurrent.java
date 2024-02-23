@@ -140,9 +140,8 @@ public class Concurrent {
      * @throws InterruptedException If interrupted.
      */
     public static void join(ExecutorService executorService) throws InterruptedException {
-        Objects.requireNonNull(executorService, "Executor service is null.").shutdown();
-        if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS))
-            throw new InterruptedException();
+        Objects.requireNonNull(executorService, "Executor service is null.").close();
+        Interruptible.validateInterrupted();
     }
 
     /**
